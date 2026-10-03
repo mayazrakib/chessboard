@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/badge/Coverage-92.3%25-237c65)](#development-and-verification)
 [![License: MIT](https://img.shields.io/badge/License-MIT-237c65)](LICENSE)
 
-chessboard is a framework-independent web component for an elegant, highly-customizable chess board.
+`chessboard` is a framework-independent web component for an elegant, highly-customizable chess board.
 
 It features:
 

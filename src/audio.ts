@@ -1,4 +1,3 @@
-
 export type BoardSound = "move" | "capture" | "check" | "checkmate" | "draw" | "win" | "lose";
 
 const SOUND_URLS: Record<
