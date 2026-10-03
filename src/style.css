@@ -1,0 +1,951 @@
+@property --square-overlay {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
+/**
+ * The host defines overridable colors, coordinate typography, annotation colors, and motion
+ * durations. Container sizing keeps descendants proportional to the board width.
+ */
+:host {
+    --chessboard-light: #f0d9b5;
+    --chessboard-dark: #b58863;
+    --chessboard-frame: #404040;
+    --chessboard-frame-width: 2px;
+    --chessboard-coordinate-opacity: .9;
+    --chessboard-coordinate-weight: 500;
+    --chessboard-coordinate-size: clamp(
+        16.2px,
+        2.916cqw,
+        22.68px
+    );
+    --chessboard-selected: rgba(
+        219,
+        192,
+        100,
+        .52
+    );
+    --chessboard-last-move: rgba(
+        221,
+        198,
+        117,
+        .68
+    );
+    --chessboard-premove: rgba(
+        111,
+        147,
+        174,
+        .5
+    );
+    --chessboard-check: rgba(
+        184,
+        80,
+        74,
+        .72
+    );
+    --chessboard-marker: rgba(
+        0,
+        0,
+        0,
+        .14
+    );
+    --chessboard-capture-marker: var(--chessboard-marker);
+    --chessboard-mark-amber: rgba(
+        229,
+        152,
+        55,
+        .78
+    );
+    --chessboard-mark-blue: rgba(
+        63,
+        135,
+        208,
+        .78
+    );
+    --chessboard-mark-green: rgba(
+        75,
+        169,
+        112,
+        .78
+    );
+    --chessboard-mark-red: rgba(
+        209,
+        78,
+        72,
+        .78
+    );
+    --chessboard-animation-duration: 260ms;
+    --chessboard-state-duration: 200ms;
+    --chessboard-hint-duration: 220ms;
+    --chessboard-motion-easing: cubic-bezier(.22, .61, .36, 1);
+    display: block;
+    width: 100%;
+    position: relative;
+    isolation: isolate;
+    container-type: inline-size;
+    box-sizing: border-box;
+    overflow: visible;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/**
+ * The hidden attribute removes the complete board from layout.
+ */
+:host([hidden]) {
+    display: none;
+}
+
+:host([data-quality-profile="balanced"]) {
+    --chessboard-shadow: 0 1px 3px rgba(16, 35, 24, .1);
+}
+
+:host([data-quality-profile="minimal"]) {
+    --chessboard-shadow: none;
+}
+
+.visually_hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/**
+ * Alternate themes share interaction colors and override square palettes.
+ */
+:host([theme="sage"]),
+:host([theme="slate"]),
+:host([theme="linen"]) {
+    --chessboard-frame-width: 0px;
+    --chessboard-coordinate-opacity: .55;
+    --chessboard-coordinate-weight: 650;
+    --chessboard-coordinate-size: clamp(
+        12.96px,
+        2.349cqw,
+        17.82px
+    );
+    --chessboard-radius: 2px;
+    --chessboard-shadow: 0 1px 3px rgba(
+        16,
+        35,
+        24,
+        .12
+    ), 0 9px 24px rgba(
+        16,
+        35,
+        24,
+        .07
+    );
+}
+
+:host([theme="sage"]) {
+    --chessboard-light: #e9ede8;
+    --chessboard-dark: #81998d;
+}
+
+:host([theme="slate"]) {
+    --chessboard-light: #e8ecee;
+    --chessboard-dark: #8295a0;
+}
+
+:host([theme="linen"]) {
+    --chessboard-light: #f0eee7;
+    --chessboard-dark: #aaa997;
+}
+
+/**
+ * Shadow-tree elements include borders and padding in declared dimensions.
+ */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/**
+ * The surface establishes board geometry and an isolated stacking context for pieces, annotations,
+ * and promotion choices.
+ */
+.board_surface {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    isolation: isolate;
+    border: var(--chessboard-frame-width) solid var(--chessboard-frame);
+    border-radius: var(
+        --chessboard-radius,
+        0
+    );
+    background: var(--chessboard-light);
+    box-shadow: var(
+        --chessboard-shadow,
+        none
+    );
+}
+
+/**
+ * The grid contains eight equal rows and columns inside the configured frame.
+ */
+.board {
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: repeat(
+        8,
+        minmax(
+            0,
+            1fr
+        )
+    );
+    grid-template-rows: repeat(
+        8,
+        minmax(
+            0,
+            1fr
+        )
+    );
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    touch-action: none;
+}
+
+/**
+ * Square buttons fill grid cells and expose accessible keyboard interaction.
+ */
+.square {
+    --square-overlay: transparent;
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    background-image: linear-gradient(
+        var(--square-overlay),
+        var(--square-overlay)
+    );
+}
+
+/**
+ * State transitions begin after readiness so initial paint does not animate.
+ */
+.board.ready .square {
+    transition:
+        background-color var(--chessboard-state-duration) var(--chessboard-motion-easing),
+        --square-overlay var(--chessboard-state-duration) var(--chessboard-motion-easing);
+}
+
+/**
+ * Square colors and interaction backgrounds derive from host custom properties.
+ */
+.square.light {
+    background-color: var(--chessboard-light);
+}
+
+.square.dark {
+    background-color: var(--chessboard-dark);
+}
+
+.board.readonly .square {
+    cursor: default;
+}
+
+.square.last_move {
+    --square-overlay: var(--chessboard-last-move);
+}
+
+.square.premove_from, .square.premove_to {
+    --square-overlay: var(--chessboard-premove);
+}
+
+.square.selected {
+    --square-overlay: var(--chessboard-selected);
+}
+
+.square.checked {
+    --square-overlay: var(--chessboard-check);
+}
+
+.square_status {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    box-sizing: border-box;
+    border: 3px solid var(
+        --chessboard-check-outline,
+        #c92c3a
+    );
+    box-shadow: none;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+        opacity var(--chessboard-state-duration) var(--chessboard-motion-easing);
+}
+
+.square_status::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        circle at center,
+        transparent 30%,
+        color-mix(
+            in srgb,
+            var(
+                --chessboard-check-outline,
+                #c92c3a
+            ) 18%,
+            transparent
+        ) 60%,
+        color-mix(
+            in srgb,
+            var(
+                --chessboard-check-outline,
+                #c92c3a
+            ) 44%,
+            transparent
+        ) 100%
+    );
+    opacity: 0;
+    transform: scale(.92);
+    transition:
+        opacity var(--chessboard-state-duration) var(--chessboard-motion-easing),
+        transform var(--chessboard-state-duration) var(--chessboard-motion-easing);
+}
+
+.square.checked > .square_status {
+    opacity: 1;
+}
+
+.square.checked > .square_status::before {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.square.checkmated > .square_status::before {
+    background: radial-gradient(
+        circle at center,
+        transparent 20%,
+        color-mix(
+            in srgb,
+            var(
+                --chessboard-check-outline,
+                #c92c3a
+            ) 26%,
+            transparent
+        ) 54%,
+        color-mix(
+            in srgb,
+            var(
+                --chessboard-check-outline,
+                #c92c3a
+            ) 62%,
+            transparent
+        ) 100%
+    );
+    animation: checkmate_glow 900ms ease-in-out 2;
+}
+
+@keyframes checkmate_glow {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: .82;
+        transform: scale(.96);
+    }
+}
+
+.board.motion_disabled .square.checkmated > .square_status::before {
+    animation: none;
+}
+
+:host([data-quality-profile="balanced"]) .square.checkmated > .square_status::before {
+    animation-iteration-count: 1;
+}
+
+:host([data-quality-profile="minimal"]) .square_focus,
+:host([data-quality-profile="minimal"]) .promotion_panel {
+    box-shadow: none;
+}
+
+.square:focus-visible {
+    outline: none;
+}
+
+/**
+ * The inset focus layer represents keyboard focus, selection, and the active drag target without
+ * changing square dimensions.
+ */
+.square_focus {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    border: 3px solid var(
+        --chessboard-focus-color,
+        #fff4df
+    );
+    border-radius: 0;
+    box-shadow:
+        inset 0 0 0 1px rgba(
+            0,
+            0,
+            0,
+            .12
+        ),
+        0 2px 6px rgba(
+            0,
+            0,
+            0,
+            .3
+        );
+    opacity: 0;
+    transform: scale(.96);
+    pointer-events: none;
+    transition:
+        box-shadow var(--chessboard-state-duration) var(--chessboard-motion-easing),
+        opacity var(--chessboard-state-duration) var(--chessboard-motion-easing),
+        transform var(--chessboard-state-duration) var(--chessboard-motion-easing);
+}
+
+.board:not(.dragging) .square:focus-visible > .square_focus,
+.board:not(.dragging) .square.selected > .square_focus,
+.board:not(.readonly) .square.drag_target > .square_focus {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.board.dragging .square_focus {
+    transition: none;
+}
+
+/**
+ * Coordinate pseudo-elements use square metadata supplied by the renderer and scale with the board
+ * container.
+ */
+.square.coordinates::before,
+.square.coordinates::after {
+    position: absolute;
+    z-index: 2;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--chessboard-coordinate-size);
+    font-weight: var(--chessboard-coordinate-weight);
+    line-height: 1;
+    pointer-events: none;
+    opacity: var(--chessboard-coordinate-opacity);
+}
+
+.square.coordinates::before {
+    content: attr(data-rank_label);
+    top: 6%;
+    left: 6%;
+}
+
+.square.coordinates::after {
+    content: attr(data-file_label);
+    right: 6%;
+    bottom: 5%;
+}
+
+.square.light.coordinates::before,
+.square.light.coordinates::after {
+    color: var(--chessboard-dark);
+}
+
+.square.dark.coordinates::before,
+.square.dark.coordinates::after {
+    color: var(--chessboard-light);
+}
+
+/**
+ * Legal-move hints use center markers for empty targets and inset rings for captures.
+ */
+.hint {
+    position: absolute;
+    z-index: 0;
+    width: 32.8%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--chessboard-marker);
+    opacity: 0;
+    transform: scale(.45);
+    pointer-events: none;
+}
+
+.board.ready .hint {
+    transition:
+        opacity var(--chessboard-hint-duration) var(--chessboard-motion-easing),
+        transform var(--chessboard-hint-duration) var(--chessboard-motion-easing);
+}
+
+.square.legal .hint,
+.square.legal_capture .hint {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.square.legal_capture .hint {
+    inset: 0;
+    width: auto;
+    box-sizing: border-box;
+    border: 5px solid var(--chessboard-capture-marker);
+    border-radius: 50%;
+    background: none;
+}
+
+/**
+ * Piece containers fill their square while artwork remains independent of pointer event targeting.
+ */
+.piece {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    will-change: auto;
+}
+
+/**
+ * Moving pieces render above stationary artwork during animations.
+ */
+.piece.moving {
+    transform-origin: center;
+    z-index: 4;
+    will-change: transform;
+}
+
+.piece svg,
+.promotion_choice svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/**
+ * Pending promotion hides destination artwork until the choice resolves.
+ */
+.piece.promotion_capture {
+    visibility: hidden;
+}
+
+/**
+ * Dragged artwork rotates independently of the container translation and scale.
+ */
+.drag_ghost > * {
+    transform-origin: 50% 80%;
+    will-change: transform;
+}
+
+/**
+ * Dragged pieces occupy a surface layer and pass pointer events through to the board.
+ */
+.drag_ghost {
+    position: absolute;
+    z-index: 10;
+    width: 12.5%;
+    height: 12.5%;
+    left: 0;
+    top: 0;
+
+    pointer-events: none;
+    will-change: transform;
+}
+
+/**
+ * The SVG annotation layer spans the board and passes pointer input through to squares.
+ */
+.shapes {
+    position: absolute;
+    z-index: 11;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.shapes .engine_mark {
+    opacity: .72;
+}
+
+.square_mark rect {
+    fill: currentColor;
+    fill-opacity: .1;
+}
+
+.square_mark path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: .06;
+    stroke-linecap: butt;
+    stroke-linejoin: round;
+}
+
+/**
+ * An empty promotion layer does not block input or occupy visible space.
+ */
+.promotion_layer:empty {
+    display: none;
+}
+
+/**
+ * The active promotion layer overlays the board and centers the four promotion choices.
+ */
+.promotion_layer {
+    position: absolute;
+    z-index: 12;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(
+        19,
+        31,
+        26,
+        .32
+    );
+}
+
+.promotion_panel {
+    display: flex;
+    gap: 2px;
+    max-width: calc(100% - 20px);
+    padding: 5px;
+    border: 1px solid rgba(
+        33,
+        50,
+        40,
+        .13
+    );
+    border-radius: 7px;
+    background: #f2f3ed;
+    box-shadow: 0 10px 28px rgba(
+        12,
+        23,
+        19,
+        .2
+    );
+}
+
+/**
+ * Promotion buttons retain visible hover and keyboard focus states.
+ */
+.promotion_choice {
+    display: grid;
+    place-items: center;
+    width: clamp(
+        48px,
+        12vw,
+        72px
+    );
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+}
+
+.promotion_choice:hover, .promotion_choice:focus, .promotion_choice:active {
+    background: #dedede;
+    outline: 2px solid rgba(
+        55,
+        55,
+        55,
+        .65
+    );
+    outline-offset: -2px;
+}
+
+/**
+ * Reduced-motion preferences disable state transitions. JavaScript separately disables piece
+ * animations.
+ */
+@media (prefers-reduced-motion: reduce) {
+    .square.checkmated > .square_status::before {
+        animation: none;
+    }
+
+    .square, .square_status, .square_status::before, .hint, .square_focus {
+        transition-duration: 0ms !important;
+    }
+}
+
+/**
+ * Material rows separate player identity, recorded captures, remaining inventory, and point
+ * advantage.
+ */
+.material_row {
+    display: grid;
+    grid-template-columns: auto minmax(
+        0,
+        1fr
+    ) auto 30px;
+    align-items: center;
+    column-gap: 10px;
+    min-height: 58px;
+    padding: 8px 2px;
+    color: var(
+        --chessboard-material-color,
+        #171717
+    );
+    font: 500 14.4px/1.4 Inter, ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.material_row[hidden] {
+    display: none;
+}
+
+/**
+ * Player identity combines a name with a color marker.
+ */
+.material_identity {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 650;
+}
+
+.material_identity::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border: 1px solid #171717;
+    border-radius: 50%;
+    background: #fffefa;
+}
+
+.material_row[data-color="b"] .material_identity::before {
+    background: #171717;
+}
+
+/**
+ * Capture groups retain piece order without expanding the board width.
+ */
+.material_captures {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    color: var(
+        --chessboard-material-muted,
+        #73716b
+    );
+    font-size: 12px;
+}
+
+/**
+ * Each capture group contains opponent artwork and an optional quantity.
+ */
+.capture_group {
+    display: inline-flex;
+    align-items: center;
+    height: 33.6px;
+}
+
+.capture_group svg {
+    display: block;
+    width: 31.2px;
+    height: 31.2px;
+}
+
+/**
+ * Stacked display overlaps repeated icons; count display uses one icon per captured piece type.
+ */
+.material_row[data-capture_display="stacked"] .capture_group svg + svg {
+    margin-left: -18px;
+}
+
+.material_row[data-capture_display="stacked"] .capture_group svg {
+    flex-shrink: 0;
+}
+
+/**
+ * Quantities remain readable beside compact capture artwork.
+ */
+.capture_quantity {
+    margin-left: -3px;
+    padding-top: 9px;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+/**
+ * Inventory text reports remaining piece count and material points.
+ */
+.material_inventory {
+    color: var(
+        --chessboard-material-muted,
+        #73716b
+    );
+    font-size: 13.2px;
+    white-space: nowrap;
+}
+
+/**
+ * The advantage badge distinguishes equal material from positive and negative differences.
+ */
+.material_advantage {
+    display: grid;
+    place-items: center;
+    min-height: 31.2px;
+    border-radius: 5px;
+    background: #1717170a;
+    font-size: 14.4px;
+    font-weight: 650;
+}
+
+.material_advantage[data-state="ahead"] {
+    background: var(
+        --chessboard-material-color,
+        #171717
+    );
+    color: #fffefa;
+}
+
+/**
+ * Narrow boards reduce material-row spacing and typography to preserve a compact layout.
+ */
+@container (max-width: 380px) {
+    .material_row {
+        grid-template-columns: auto minmax(
+            0,
+            1fr
+        ) 30px;
+        column-gap: 7px;
+    }
+
+    .material_identity {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .material_inventory {
+        grid-column: 1 / 3;
+        grid-row: 2;
+        font-size: 12px;
+    }
+
+    .material_captures {
+        grid-column: 2;
+        grid-row: 1;
+        justify-content: end;
+    }
+
+    .material_advantage {
+        grid-column: 3;
+        grid-row: 1 / 3;
+    }
+}
+
+/**
+ * Browsers without container width units use viewport-based coordinate sizing.
+ */
+@supports not (width: 1cqw) {
+    :host {
+        --chessboard-coordinate-size: clamp(
+            13px,
+            2.9vw,
+            22px
+        );
+    }
+}
+
+.piece > * {
+    box-sizing: border-box;
+    padding: var(--chessboard-piece-padding, 0px);
+    scale: var(--chessboard-piece-scale, 1);
+}
+
+.piece > img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.square_overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 12;
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+    color: var(--chessboard-overlay-color, currentColor);
+    font-size: var(--chessboard-overlay-font-size, 1rem);
+}
+
+.celebration_layer {
+    position: absolute;
+    inset: 0;
+    z-index: 15;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.confetti {
+    position: absolute;
+    top: -5%;
+    width: 1.2%;
+    height: 2.2%;
+    border-radius: 1px;
+    animation: confetti_fall 2600ms cubic-bezier(.22, .61, .36, 1) forwards;
+}
+
+@keyframes confetti_fall {
+    0% {
+        transform: translate3d(0, -4cqw, 0) rotate(0deg);
+        opacity: 0;
+    }
+
+    8%, 68% {
+        opacity: 1;
+    }
+
+    48% {
+        transform: translate3d(var(--confetti-mid-drift), 48cqw, 0) rotate(280deg);
+    }
+
+    100% {
+        transform: translate3d(var(--confetti-end-drift), 110cqw, 0) rotate(620deg);
+        opacity: 0;
+    }
+}
+
+.board.motion_disabled ~ .celebration_layer {
+    display: none;
+}
+
+:host([data-quality-profile="balanced"]) .confetti {
+    animation-duration: 1800ms;
+}
+
+:host([data-quality-profile="minimal"]) .celebration_layer {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .celebration_layer {
+        display: none;
+    }
+    .confetti {
+        animation: none;
+    }
+}

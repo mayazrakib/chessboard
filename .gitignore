@@ -1,0 +1,53 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+
+# OS metadata
+.DS_Store
+.AppleDouble
+Desktop.ini
+Thumbs.db
+
+# Editor and IDE metadata
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+*.log.*
+
+# Dependencies
+node_modules/
+
+# Build artefacts
+dist/
+*.tgz
+
+# Test artefacts
+playwright-report/
+test-results/
+
+# Coverage artefacts
+coverage/
+lcov.info
+.nyc_output/
+
+# Linting and static analysis
+.eslintcache
+.stylelintcache
+
+# JavaScript and TypeScript
+.vite/
+*.tsbuildinfo
+
+# Package manager caches
+.npm/

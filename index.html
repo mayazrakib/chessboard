@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+        <meta name="description" content="An elegant, highly-customizable chessboard.">
+        <title>Chessboard Playground</title>
+        <script type="module" src="./demo/app/bootstrap.tsx"></script>
+    </head>
+    <body>
+        <main class="playground">
+            <section class="board_stage" aria-labelledby="board_title">
+                <h2 class="visually_hidden" id="board_title">Interactive Chessboard</h2>
+                <meson-chessboard id="chessboard" aria-label="Chessboard">
+                    <p class="loading_status">Loading the chessboard.</p>
+                </meson-chessboard>
+            </section>
+            <section class="controls_stage" aria-labelledby="controls_title">
+                <h2 class="visually_hidden" id="controls_title">Chessboard Controls</h2>
+                <div id="controls" aria-busy="true">
+                    <p class="loading_status">Loading the chessboard controls.</p>
+                </div>
+            </section>
+            <noscript>
+                <p>This playground requires JavaScript.</p>
+            </noscript>
+        </main>
+    </body>
+</html>
