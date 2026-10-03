@@ -5,7 +5,7 @@ test(
     async ({ page, },) => {
         await page.goto("/test/browser/drag.html",);
         await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             await board.when_ready();
             board.set_options({ animation_duration: 0, is_muted: true, interaction: { can_drag: false, }, },);
         },);
@@ -19,15 +19,15 @@ test(
         );
         await origin.click();
         await destination.click();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual(["e2e4",],);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual(["e2e4",],);
         await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.undo();
             board.set_options({ interaction: { can_click_move: false, }, },);
         },);
         await origin.click();
         await destination.click();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual([],);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual([],);
     },
 );
 
@@ -73,14 +73,14 @@ test(
             "button",
             { name: "Apply configuration", },
         ).click();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_options().pieces.scale,),).toBe(0.8,);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_options().pieces.scale,),).toBe(0.8,);
         await page.getByLabel("Partial options as JSON",).fill('{"pieces":{"scale":-1}}',);
         await page.getByRole(
             "button",
             { name: "Apply configuration", },
         ).click();
         await expect(page.getByRole("status",).filter({ hasText: "outside its supported range", },),).toBeVisible();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_options().pieces.scale,),).toBe(0.8,);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_options().pieces.scale,),).toBe(0.8,);
     },
 );
 
@@ -97,7 +97,7 @@ test(
         await page.getByLabel("Announce moves",).check();
         await page.getByLabel("Announce annotations",).check();
         const options = await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
 
             return {
                 announce_annotations: board.get_options().accessibility.announce_annotations,
@@ -113,7 +113,7 @@ test(
             touch_mode: "annotate",
         },);
         const annotation = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             const square = board.shadowRoot.querySelector('[data-square="a4"]',);
             const bounds = square.getBoundingClientRect();
             const parameters = {
@@ -143,7 +143,7 @@ test(
         expect(annotation.announcement,).toBe("1 annotation.",);
         expect(annotation.marks,).toEqual([{ from: "a4", },],);
         const move_announcement = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.move_uci("e2e4",);
             await Promise.resolve();
 

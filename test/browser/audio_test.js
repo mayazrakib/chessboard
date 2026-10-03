@@ -41,7 +41,7 @@ test(
         expect(await page.evaluate(() => window.played_sounds[0],),).toMatch(/\/audio\/move\.mp3$/,);
 
         await mute.click();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).is_muted(),),).toBe(true,);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).is_muted(),),).toBe(true,);
         expect(await page.evaluate(() => window.last_audio.paused,),).toBe(true,);
         await page.locator("#uci_input",).fill("d7d5",);
         await page.getByRole(
@@ -50,7 +50,7 @@ test(
         ).click();
         expect(await page.evaluate(() => window.played_sounds.length,),).toBe(1,);
 
-        await page.evaluate(() => document.querySelector("meson-chessboard",).set_muted(false,),);
+        await page.evaluate(() => document.querySelector("chess-board",).set_muted(false,),);
         await expect(mute,).toHaveAttribute(
             "aria-checked",
             "false",

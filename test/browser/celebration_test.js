@@ -10,8 +10,8 @@ for (const [winner, pgn,] of [
             await page.goto("/",);
             await page.evaluate(
                 async (pgn,) => {
-                    await customElements.whenDefined("meson-chessboard",);
-                    const board = document.querySelector("meson-chessboard",);
+                    await customElements.whenDefined("chess-board",);
+                    const board = document.querySelector("chess-board",);
                     await board.when_ready();
                     board.set_options({ is_muted: true, },);
                     board.set_pgn(pgn,);
@@ -25,19 +25,19 @@ for (const [winner, pgn,] of [
             );
             await expect(restart,).toBeVisible();
             await expect(page.locator(".confetti",),).toHaveCount(40,);
-            await page.evaluate(() => document.querySelector("meson-chessboard",).flip(),);
+            await page.evaluate(() => document.querySelector("chess-board",).flip(),);
             await expect(page.locator(".confetti",),).toHaveCount(0,);
-            await page.evaluate(() => document.querySelector("meson-chessboard",).flip(),);
+            await page.evaluate(() => document.querySelector("chess-board",).flip(),);
             await expect(page.locator(".confetti",),).toHaveCount(0,);
-            await page.evaluate(() => document.querySelector("meson-chessboard",).undo(),);
+            await page.evaluate(() => document.querySelector("chess-board",).undo(),);
             await expect(restart,).toBeHidden();
-            await page.evaluate(() => document.querySelector("meson-chessboard",).redo(),);
+            await page.evaluate(() => document.querySelector("chess-board",).redo(),);
             await expect(page.locator(".confetti",),).toHaveCount(40,);
             await restart.click();
             await expect(page.locator("#turn_indicator",),).toHaveText("White to move",);
             await expect(restart,).toBeHidden();
             await expect(page.locator(".confetti",),).toHaveCount(0,);
-            expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual([],);
+            expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual([],);
         },
     );
 }
@@ -48,8 +48,8 @@ test(
         await page.emulateMedia({ reducedMotion: "reduce", },);
         await page.goto("/",);
         await page.evaluate(async () => {
-            await customElements.whenDefined("meson-chessboard",);
-            const board = document.querySelector("meson-chessboard",);
+            await customElements.whenDefined("chess-board",);
+            const board = document.querySelector("chess-board",);
             await board.when_ready();
             board.set_pgn("1. f3 e5 2. g4 Qh4#",);
         },);
@@ -57,7 +57,7 @@ test(
         await expect(page.locator(".confetti",),).toHaveCount(0,);
         await page.emulateMedia({ reducedMotion: "no-preference", },);
         await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.undo();
             board.set_options({ animation_duration: 0, },);
             board.redo();

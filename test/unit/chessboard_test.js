@@ -9,7 +9,7 @@ const { ChessboardElement, define_chessboard, } = await import("../../dist/core.
 define_chessboard();
 
 function create_board() {
-    return document.createElement("meson-chessboard",);
+    return document.createElement("chess-board",);
 }
 
 for (const [key, allowed,] of [

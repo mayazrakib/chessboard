@@ -12,7 +12,7 @@ async function prepare_board(
     await page.locator(".board.ready",).waitFor();
     await page.evaluate(
         (configuration,) => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.style.transform = `scale(${configuration.scale ?? 1})`;
             board.set_options({ orientation: configuration.orientation, },);
             board.set_position(configuration.fen,);
@@ -23,7 +23,7 @@ async function prepare_board(
         },
     );
     await page.waitForFunction(() => {
-        const artwork = document.querySelector("meson-chessboard",).shadowRoot.querySelector(".piece svg",);
+        const artwork = document.querySelector("chess-board",).shadowRoot.querySelector(".piece svg",);
 
         return artwork.getBBox().width > 0;
     },);
@@ -89,7 +89,7 @@ async function start_drag(
 
 async function pause_motion_frames(page,) {
     await page.waitForFunction(() => {
-        const artwork = document.querySelector("meson-chessboard",).shadowRoot.querySelector(".drag_ghost",)?.firstElementChild;
+        const artwork = document.querySelector("chess-board",).shadowRoot.querySelector(".drag_ghost",)?.firstElementChild;
 
         return artwork?.style.transform === "";
     },);
@@ -110,7 +110,7 @@ async function pause_motion_frames(page,) {
 
 async function get_highlight(page,) {
     return page.evaluate(() => {
-        const square = document.querySelector("meson-chessboard",).shadowRoot.querySelector(".drag_target",);
+        const square = document.querySelector("chess-board",).shadowRoot.querySelector(".drag_target",);
 
         return square ? {
             square: square.dataset.square,
@@ -120,7 +120,7 @@ async function get_highlight(page,) {
 }
 
 async function get_moves(page,) {
-    return page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),);
+    return page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),);
 }
 
 test(
@@ -145,7 +145,7 @@ test(
         await page.evaluate(() => new Promise(requestAnimationFrame,),);
 
         const moving_observation = await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             const ghost_bounds = board.shadowRoot.querySelector(".drag_ghost",).getBoundingClientRect();
             const target = board.shadowRoot.querySelector(".drag_target",);
 
@@ -230,7 +230,7 @@ for (const orientation of ["white", "black",]) {
                             );
                             const session = await page.context().newCDPSession(page,);
                             await page.evaluate(() => {
-                                const board = document.querySelector("meson-chessboard",);
+                                const board = document.querySelector("chess-board",);
                                 window.release_events = [];
 
                                 for (const name of ["pointermove", "pointerup",]) {
@@ -300,7 +300,7 @@ for (const orientation of ["white", "black",]) {
                                     await expect(page.locator(".piece",),).toHaveCount(32,);
                                     await expect(page.locator(".drag_ghost",),).toHaveCount(0,);
                                     await page.evaluate(async () => {
-                                        const board = document.querySelector("meson-chessboard",);
+                                        const board = document.querySelector("chess-board",);
                                         board.undo();
                                         await Promise.all(board.shadowRoot.getAnimations().map((animation,) => animation.finished,),);
                                     },);
@@ -528,7 +528,7 @@ for (const orientation of ["white", "black",]) {
                     await expect(page.locator("#feedback",),).toHaveText("e4 played.",);
                     await expect(page.locator('[data-square="e4"] .piece',),).toHaveCount(1,);
                     await page.evaluate(async () => {
-                        const board = document.querySelector("meson-chessboard",);
+                        const board = document.querySelector("chess-board",);
                         board.undo();
                         await Promise.all(board.shadowRoot.getAnimations().map((animation,) => animation.finished,),);
                     },);
@@ -546,7 +546,7 @@ for (const orientation of ["white", "black",]) {
                     { orientation, },
                 );
                 await page.evaluate(() => {
-                    const board = document.querySelector("meson-chessboard",);
+                    const board = document.querySelector("chess-board",);
                     const piece = board.shadowRoot.querySelector('[data-square="e2"] .piece',);
                     board.addEventListener(
                         "pointerup",
@@ -588,7 +588,7 @@ for (const orientation of ["white", "black",]) {
                 expect(motion[0].duration_ms,).toBe(220,);
                 expect(motion[0].frames[0],).not.toBe(motion[0].frames.at(-1,),);
                 await page.evaluate(async () => {
-                    const shadow = document.querySelector("meson-chessboard",).shadowRoot;
+                    const shadow = document.querySelector("chess-board",).shadowRoot;
                     const animations = [...shadow.querySelectorAll(".piece",),].flatMap((piece,) => piece.getAnimations(),);
                     await Promise.all(animations.map((animation,) => animation.finished,),);
                 },);
@@ -627,7 +627,7 @@ test.describe(
                     );
                     const session = await page.context().newCDPSession(page,);
                     await page.evaluate(() => {
-                        const board = document.querySelector("meson-chessboard",);
+                        const board = document.querySelector("chess-board",);
                         window.capture_events = [];
 
                         for (const name of ["lostpointercapture", "pointermove", "pointerup", "chessboard:move",]) {
@@ -709,7 +709,7 @@ test.describe(
                             await expect(page.locator('[data-square="e4"] .piece',),).toHaveCount(1,);
                             await expect(page.locator(".drag_ghost",),).toHaveCount(0,);
                             await page.evaluate(async () => {
-                                const board = document.querySelector("meson-chessboard",);
+                                const board = document.querySelector("chess-board",);
                                 board.undo();
                                 await Promise.all(board.shadowRoot.getAnimations().map((animation,) => animation.finished,),);
                             },);
@@ -838,7 +838,7 @@ test.describe(
                         },);
                         await page.evaluate(
                             (reason,) => {
-                                const board = document.querySelector("meson-chessboard",);
+                                const board = document.querySelector("chess-board",);
 
                                 if (reason === "pointercancel") {
                                     document.dispatchEvent(new PointerEvent(

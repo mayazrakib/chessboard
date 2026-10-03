@@ -12,14 +12,14 @@ test(
         const core = await import("../../dist/core.js",);
 
         assert.equal(
-            customElements.get("meson-chessboard",),
+            customElements.get("chess-board",),
             undefined,
         );
 
         const entrypoint = await import("../../dist/index.js",);
 
         assert.equal(
-            customElements.get("meson-chessboard",),
+            customElements.get("chess-board",),
             core.ChessboardElement,
         );
 
@@ -31,7 +31,7 @@ test(
         }
 
         assert.doesNotThrow(() => core.define_chessboard(),);
-        assert.ok(document.createElement("meson-chessboard",) instanceof core.ChessboardElement,);
+        assert.ok(document.createElement("chess-board",) instanceof core.ChessboardElement,);
     },
 );
 

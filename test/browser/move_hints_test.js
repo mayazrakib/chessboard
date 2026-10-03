@@ -8,7 +8,7 @@ for (const orientation of ["white", "black",]) {
             await page.locator(".board.ready",).waitFor();
             await page.evaluate(
                 (orientation,) => {
-                    document.querySelector("meson-chessboard",).set_options({ orientation, is_muted: true, },);
+                    document.querySelector("chess-board",).set_options({ orientation, is_muted: true, },);
                 },
                 orientation,
             );
@@ -54,7 +54,7 @@ for (const orientation of ["white", "black",]) {
             await page.mouse.up();
             await expect(hints,).toHaveCount(0,);
 
-            await page.evaluate(() => document.querySelector("meson-chessboard",).set_options({ show_legal_moves: false, },),);
+            await page.evaluate(() => document.querySelector("chess-board",).set_options({ show_legal_moves: false, },),);
             await origin.click();
             await expect(hints,).toHaveCount(0,);
             await page.mouse.move(
@@ -78,7 +78,7 @@ test(
         await page.goto("/test/browser/drag.html",);
         await page.locator(".board.ready",).waitFor();
         await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_options({ is_muted: true, interaction: { can_click_move: false, }, },);
             board.set_pgn("1. e4 d5",);
             board.addEventListener(
@@ -103,7 +103,7 @@ test(
             "1",
         );
         await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.dispatchEvent(new PointerEvent(
                 "pointercancel",
                 { pointerId: window.active_pointer_id, bubbles: true, },
@@ -123,6 +123,6 @@ test(
         await expect(page.locator('[data-square="d5"]',),).toHaveClass(/legal_capture/,);
         await page.mouse.up();
         await expect(page.locator(".legal, .legal_capture",),).toHaveCount(0,);
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves().at(-1,),),).toBe("e4d5",);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves().at(-1,),),).toBe("e4d5",);
     },
 );

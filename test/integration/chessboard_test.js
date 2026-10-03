@@ -16,7 +16,7 @@ globalThis.cancelAnimationFrame = window.cancelAnimationFrame.bind(window,);
 const { ChessboardElement, } = await import("../../dist/index.js",);
 
 function create_board() {
-    const board = document.createElement("meson-chessboard",);
+    const board = document.createElement("chess-board",);
     document.body.append(board,);
     board.set_options({ animation_duration: 0, },);
 

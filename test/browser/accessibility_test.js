@@ -29,7 +29,7 @@ function calculate_contrast(
 test.beforeEach(async ({ page, },) => {
     await page.goto("/test/browser/drag.html",);
     await page.evaluate(async () => {
-        const board = document.querySelector("meson-chessboard",);
+        const board = document.querySelector("chess-board",);
         await board.when_ready();
         board.set_options({ animation_duration: 0, is_muted: true, },);
     },);
@@ -39,7 +39,7 @@ test(
     "Exposes a named grid, named squares, and one keyboard entry point.",
     async ({ page, },) => {
         const semantics = await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             const cells = [...board.shadowRoot.querySelectorAll('[role="gridcell"]',),];
 
             return {
@@ -68,7 +68,7 @@ test(
     "Names and focuses promotion choices while keeping readonly navigation available.",
     async ({ page, },) => {
         await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_position("8/P7/8/8/8/8/7k/4K3 w - - 0 1",);
         },);
         await page.locator('[data-square="a7"]',).click();
@@ -82,7 +82,7 @@ test(
             "button",
             { name: "Promote to queen", },
         ),).toBeFocused();
-        await page.evaluate(() => document.querySelector("meson-chessboard",).set_options({ interactive: false, },),);
+        await page.evaluate(() => document.querySelector("chess-board",).set_options({ interactive: false, },),);
         await page.getByRole(
             "gridcell",
             { name: /^a7,/, },
@@ -99,7 +99,7 @@ test(
     "Announces chess events and maintains readable playground text contrast.",
     async ({ page, },) => {
         const announcements = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_options({ accessibility: { announce_annotations: true, announce_moves: true, }, },);
             board.move_uci("e2e4",);
             await Promise.resolve();

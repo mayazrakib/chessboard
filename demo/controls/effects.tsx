@@ -10,7 +10,7 @@ export function EffectsControls() {
             <h3 className="font-medium">Sounds</h3>
             <div className="flex flex-wrap gap-2" aria-label="Sound previews">
                 {SOUNDS.map((sound,) => (
-                    <Button type="button" key={sound} variant="outline" onClick={() => document.querySelector("meson-chessboard",)!.play_sound(sound,)}>
+                    <Button type="button" key={sound} variant="outline" onClick={() => document.querySelector("chess-board",)!.play_sound(sound,)}>
                         Play {sound}
                     </Button>
                 ),)}

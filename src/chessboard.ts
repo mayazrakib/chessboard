@@ -3668,9 +3668,9 @@ export class ChessboardElement extends HtmlElementBase {
 }
 
 export function define_chessboard(): void {
-    if (globalThis.customElements && !customElements.get("meson-chessboard",)) {
+    if (globalThis.customElements && !customElements.get("chess-board",)) {
         customElements.define(
-            "meson-chessboard",
+            "chess-board",
             ChessboardElement,
         );
     }

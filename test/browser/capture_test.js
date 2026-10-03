@@ -16,7 +16,7 @@ for (const orientation of ["white", "black",]) {
                 await page.locator(".board.ready",).waitFor();
                 const observation = await page.evaluate(
                     ({ scenario, orientation, },) => {
-                        const board = document.querySelector("meson-chessboard",);
+                        const board = document.querySelector("chess-board",);
                         board.set_options({ orientation, is_muted: true, },);
                         board.set_position(scenario.fen,);
                         const move = board.move_uci(scenario.move,);
@@ -55,7 +55,7 @@ for (const mode of ["reduced motion", "disabled animations",]) {
             await page.locator(".board.ready",).waitFor();
             await page.evaluate(
                 (mode,) => {
-                    const board = document.querySelector("meson-chessboard",);
+                    const board = document.querySelector("chess-board",);
                     board.set_options({ animation_duration: mode === "disabled animations" ? 0 : 180, is_muted: true, },);
                     board.set_position("4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1",);
                     board.move_uci("e4d5",);
@@ -79,7 +79,7 @@ for (const scenario of [
             await page.locator(".board.ready",).waitFor();
             await page.evaluate(
                 (fen,) => {
-                    const board = document.querySelector("meson-chessboard",);
+                    const board = document.querySelector("chess-board",);
                     board.set_options({ is_muted: true, },);
                     board.set_position(fen,);
                 },

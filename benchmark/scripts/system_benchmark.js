@@ -44,7 +44,7 @@ export function run_system_benchmark() {
         ) => `${(index * FULL_MOVES_PER_CYCLE) + 1}. Nf3 Nf6 ${(index + 1) * FULL_MOVES_PER_CYCLE}. Ng1 Ng8`,
     ).join(" ",) + " *";
 
-    const board = document.createElement("meson-chessboard",);
+    const board = document.createElement("chess-board",);
 
     try {
         document.body.append(board,);

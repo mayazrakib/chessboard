@@ -14,7 +14,7 @@ const PACKAGE_DIRECTORY = fileURLToPath(new URL(
 ),);
 const temporary_directory = await mkdtemp(join(
     tmpdir(),
-    "meson-chessboard-package-",
+    "chessboard-package-",
 ),);
 
 try {
@@ -35,7 +35,7 @@ try {
     const pack_metadata = JSON.parse(pack_output,);
     const archive = Array.isArray(pack_metadata,)
         ? pack_metadata[0]
-        : pack_metadata["@mesonsystems/chessboard"];
+        : pack_metadata["@mayazrakib/chessboard"];
 
     if (!archive) {
         throw new Error("The package archive metadata could not be read.",);
@@ -116,9 +116,9 @@ try {
         verification_path,
         `import { readFile, } from "node:fs/promises";
 
-import * as root from "@mesonsystems/chessboard";
-import * as core from "@mesonsystems/chessboard/core";
-import * as replay from "@mesonsystems/chessboard/replay";
+import * as root from "@mayazrakib/chessboard";
+import * as core from "@mayazrakib/chessboard/core";
+import * as replay from "@mayazrakib/chessboard/replay";
 
 for (const [name, module, symbol,] of [
     ["root", root, "ChessboardElement",],
@@ -131,10 +131,10 @@ for (const [name, module, symbol,] of [
 }
 
 for (const specifier of [
-    "@mesonsystems/chessboard/style.css",
-    "@mesonsystems/chessboard/pieces.svg",
-    "@mesonsystems/chessboard/pieces/cburnett/white_king.svg",
-    "@mesonsystems/chessboard/audio/move.mp3",
+    "@mayazrakib/chessboard/style.css",
+    "@mayazrakib/chessboard/pieces.svg",
+    "@mayazrakib/chessboard/pieces/cburnett/white_king.svg",
+    "@mayazrakib/chessboard/audio/move.mp3",
 ]) {
     const contents = await readFile(new URL(import.meta.resolve(specifier,),),);
     if (contents.length === 0) {

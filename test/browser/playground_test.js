@@ -444,7 +444,7 @@ test(
         await page.keyboard.press("ArrowLeft",);
         await expect(page.locator('#test_second_board [data-square="e2"] .piece',),).toHaveCount(1,);
         await page.locator("#test_second_remove",).click();
-        await expect(page.locator("#test_second_board meson-chessboard",),).toHaveCount(0,);
+        await expect(page.locator("#test_second_board chess-board",),).toHaveCount(0,);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth,),).toBe(true,);
     },
 );

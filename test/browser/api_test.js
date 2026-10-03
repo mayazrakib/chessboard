@@ -3,8 +3,8 @@ import { expect, test, } from "@playwright/test";
 test.beforeEach(async ({ page, },) => {
     await page.goto("/test/browser/drag.html",);
     await page.evaluate(async () => {
-        await customElements.whenDefined("meson-chessboard",);
-        await document.querySelector("meson-chessboard",).when_ready();
+        await customElements.whenDefined("chess-board",);
+        await document.querySelector("chess-board",).when_ready();
     },);
 },);
 
@@ -12,7 +12,7 @@ test(
     "Waits for movement to settle and keeps controlled requests uncommitted until accepted.",
     async ({ page, },) => {
         const snapshot = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_options({ move_mode: "controlled", animation_duration: 40, },);
             const position = board.get_position();
             const request = board.request_move({ from: "e2", to: "e4", },);
@@ -35,7 +35,7 @@ test(
     "Uses grayscale promotion highlights and restores a rejected promotion request.",
     async ({ page, },) => {
         await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_options({ move_mode: "controlled", animation_duration: 0, },);
             board.set_position("8/P7/8/8/8/8/7k/4K3 w - - 0 1",);
         },);
@@ -56,7 +56,7 @@ test(
         await choice.click();
         await expect(page.locator('[data-square="a7"] .piece',),).toHaveCount(1,);
         const rejected = await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
 
             return board.reject_move(board.get_pending_move().id,);
         },);
@@ -72,7 +72,7 @@ test(
             (route,) => route.fulfill({ status: 404, body: "", },),
         );
         const failed = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_assets({ stylesheet_url: "/missing-chessboard.css", },);
 
             try {
@@ -85,7 +85,7 @@ test(
         },);
         expect(failed,).toBe(true,);
         const recovered = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_assets({ stylesheet_url: "/src/style.css", piece_sprite_url: "/asset/pieces/pieces.svg", },);
             await board.when_ready();
 
@@ -99,7 +99,7 @@ test(
     "Keeps moves functional without Web Animations or pointer capture.",
     async ({ page, },) => {
         const snapshot = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.shadowRoot.querySelector(".board",).animate = undefined;
             board.shadowRoot.querySelector(".board",).setPointerCapture = undefined;
             board.shadowRoot.querySelector(".board",).hasPointerCapture = undefined;
@@ -112,6 +112,6 @@ test(
         expect(snapshot,).toEqual(["e2e4",],);
         await page.locator('[data-square="e7"]',).click();
         await page.locator('[data-square="e5"]',).click();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual(["e2e4", "e7e5",],);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual(["e2e4", "e7e5",],);
     },
 );

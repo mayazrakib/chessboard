@@ -1,5 +1,5 @@
 # Chessboard Licensing
-The `@mesonsystems/chessboard` package includes library code, chess-piece artwork, and audio under different licenses. The MIT license for the library code does not replace the licenses for bundled artwork or audio. This document describes the bundled files; the linked license texts provide their terms.
+The `@mayazrakib/chessboard` package includes library code, chess-piece artwork, and audio under different licenses. The MIT license for the library code does not replace the licenses for bundled artwork or audio. This document describes the bundled files; the linked license texts provide their terms.
 
 ## Library Code
 Mayaz Rakib licenses the library code under the [MIT License](../LICENSE). The license file includes the copyright notice for Mayaz Rakib.

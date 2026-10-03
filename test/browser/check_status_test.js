@@ -10,7 +10,7 @@ for (const orientation of ["white", "black",]) {
             await page.goto("/test/browser/drag.html",);
             await page.evaluate(
                 async ({ orientation, fen, },) => {
-                    const board = document.querySelector("meson-chessboard",);
+                    const board = document.querySelector("chess-board",);
                     await board.when_ready();
                     board.set_options({ orientation, is_muted: true, },);
                     board.set_position(fen,);
@@ -49,7 +49,7 @@ for (const orientation of ["white", "black",]) {
                 "rgb(201, 44, 58)",
             );
             await page.evaluate(
-                (fen,) => document.querySelector("meson-chessboard",).set_position(fen,),
+                (fen,) => document.querySelector("chess-board",).set_position(fen,),
                 CHECKMATE_POSITION,
             );
             await expect(outline,).toHaveCSS(
@@ -61,7 +61,7 @@ for (const orientation of ["white", "black",]) {
                 "box-shadow",
                 "none",
             );
-            await page.evaluate(() => document.querySelector("meson-chessboard",).set_options({ animation_duration: 0, },),);
+            await page.evaluate(() => document.querySelector("chess-board",).set_options({ animation_duration: 0, },),);
             await expect(outline,).toHaveCSS(
                 "animation-name",
                 "none",
@@ -70,7 +70,7 @@ for (const orientation of ["white", "black",]) {
                 "box-shadow",
                 "none",
             );
-            await page.evaluate(() => document.querySelector("meson-chessboard",).set_pgn("1. e4",),);
+            await page.evaluate(() => document.querySelector("chess-board",).set_pgn("1. e4",),);
             await expect(outline,).toHaveCSS(
                 "opacity",
                 "0",
@@ -90,7 +90,7 @@ test(
         await page.goto("/test/browser/drag.html",);
         await page.evaluate(
             async (fen,) => {
-                const board = document.querySelector("meson-chessboard",);
+                const board = document.querySelector("chess-board",);
                 await board.when_ready();
                 board.set_position(fen,);
                 board.style.setProperty(

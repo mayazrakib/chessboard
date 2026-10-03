@@ -56,7 +56,7 @@ export type {
 declare global {
 
     interface HTMLElementTagNameMap {
-        "meson-chessboard": ChessboardElement;
+        "chess-board": ChessboardElement;
     }
 
     interface HTMLElementEventMap {

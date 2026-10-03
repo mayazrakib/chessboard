@@ -22,7 +22,7 @@ const options: ChessboardOptions = {
     piece_renderer: render_piece,
     playable_color: "both",
 };
-const board = document.createElement("meson-chessboard",);
+const board = document.createElement("chess-board",);
 board.set_options(options,);
 board.set_muted(true,);
 const is_muted: boolean = board.is_muted();
@@ -59,7 +59,7 @@ export { annotation, move, };
     type RulesProvider,
 } from "../../dist/index.js";
 
-const board = document.createElement("meson-chessboard",);
+const board = document.createElement("chess-board",);
 const provider: RulesProvider = STANDARD_RULES_PROVIDER;
 const options: ChessboardOptions = {
     interaction: { keyboard_shortcuts: { undo: ["u",], }, },
@@ -107,7 +107,7 @@ board.set_rules_provider(provider,);
         is_valid: false,
         source: `import "../../dist/core.js";
 
-document.createElement("meson-chessboard",).addEventListener(
+document.createElement("chess-board",).addEventListener(
     "chessboard:move_request",
     (event,) => event.detail.fen,
 );

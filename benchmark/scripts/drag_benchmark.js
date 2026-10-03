@@ -15,7 +15,7 @@ const BATCH_PERCENTILE = 0.95;
 const POINTER_CAPTURE_METHODS = ["setPointerCapture", "releasePointerCapture", "hasPointerCapture",];
 
 export async function run_drag_benchmark() {
-    const board = document.querySelector("meson-chessboard",);
+    const board = document.querySelector("chess-board",);
     const grid = board?.shadowRoot?.querySelector(".board",);
 
     if (!grid) {

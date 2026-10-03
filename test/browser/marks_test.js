@@ -8,7 +8,7 @@ async function prepare_marks(
     await page.locator(".board.ready",).waitFor();
     await page.evaluate(
         (orientation,) => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_options({ orientation, },);
             board.set_marks([
                 { from: "e2", color: "green", },
@@ -40,7 +40,7 @@ async function expect_marks_above_piece(
 ) {
     const layers = await page.evaluate(
         (selector,) => {
-            const shadow = document.querySelector("meson-chessboard",).shadowRoot;
+            const shadow = document.querySelector("chess-board",).shadowRoot;
             const piece = shadow.querySelector(selector,);
             const bounds = piece.getBoundingClientRect();
             const probe_style = document.createElement("style",);
@@ -79,7 +79,7 @@ for (const orientation of ["white", "black",]) {
                 '[data-square="e2"] .piece',
             );
             await page.evaluate(() => {
-                const board = document.querySelector("meson-chessboard",);
+                const board = document.querySelector("chess-board",);
                 board.move_uci("e2e4",);
                 const animation = board.shadowRoot.querySelector('[data-square="e4"] .piece',).getAnimations()[0];
                 animation.pause();
@@ -114,7 +114,7 @@ for (const orientation of ["white", "black",]) {
             );
             await page.mouse.down();
             await page.evaluate(() => {
-                document.querySelector("meson-chessboard",).set_marks([{ from: "e4", source: "engine", },],);
+                document.querySelector("chess-board",).set_marks([{ from: "e4", source: "engine", },],);
             },);
             await page.mouse.move(
                 target.x,
@@ -126,10 +126,10 @@ for (const orientation of ["white", "black",]) {
                 ".drag_ghost",
             );
             await page.mouse.up();
-            expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual(["e2e4",],);
+            expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual(["e2e4",],);
 
             await page.evaluate(() => {
-                const board = document.querySelector("meson-chessboard",);
+                const board = document.querySelector("chess-board",);
                 board.set_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",);
                 board.set_marks([{ from: "e5", color: "amber", },],);
                 board.addEventListener(
@@ -152,7 +152,7 @@ for (const orientation of ["white", "black",]) {
             );
             await page.mouse.down();
             await page.evaluate(() => {
-                document.querySelector("meson-chessboard",).set_marks([{ from: "e5", color: "amber", },],);
+                document.querySelector("chess-board",).set_marks([{ from: "e5", color: "amber", },],);
             },);
             await page.mouse.move(
                 invalid_target.x,
@@ -163,7 +163,7 @@ for (const orientation of ["white", "black",]) {
                 page,
                 ".drag_ghost",
             );
-            expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual([],);
+            expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual([],);
         },
     );
 
@@ -175,7 +175,7 @@ for (const orientation of ["white", "black",]) {
                 orientation,
             );
             await page.evaluate(() => {
-                const board = document.querySelector("meson-chessboard",);
+                const board = document.querySelector("chess-board",);
                 board.set_position("4k3/8/8/8/4p3/8/4R3/4K3 w - - 0 1",);
                 board.move_uci("e2e4",);
 
@@ -202,14 +202,14 @@ for (const square of ["d4", "e2",]) {
             );
             await page.evaluate(() => {
                 window.annotation_changes = [];
-                document.querySelector("meson-chessboard",).addEventListener(
+                document.querySelector("chess-board",).addEventListener(
                     "chessboard:annotations",
                     (event,) => window.annotation_changes.push(event.detail,),
                 );
             },);
             await page.locator(`[data-square="${square}"]`,).click();
             const cleared = await page.evaluate(() => {
-                const board = document.querySelector("meson-chessboard",);
+                const board = document.querySelector("chess-board",);
 
                 return {
                     marks: board.get_marks(),
@@ -226,7 +226,7 @@ for (const square of ["d4", "e2",]) {
             }
 
             await page.locator('[data-square="e4"]',).click();
-            expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual(["e2e4",],);
+            expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual(["e2e4",],);
             expect(await page.evaluate(() => window.annotation_changes.length,),).toBe(1,);
         },
     );
@@ -240,10 +240,10 @@ test(
             "white",
         );
         await page.locator('[data-square="a4"]',).click({ button: "right", },);
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_marks().length,),).toBe(5,);
-        await page.evaluate(() => document.querySelector("meson-chessboard",).set_options({ interactive: false, },),);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_marks().length,),).toBe(5,);
+        await page.evaluate(() => document.querySelector("chess-board",).set_options({ interactive: false, },),);
         await page.locator('[data-square="e2"]',).click();
-        expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_marks().length,),).toBe(5,);
+        expect(await page.evaluate(() => document.querySelector("chess-board",).get_marks().length,),).toBe(5,);
     },
 );
 
@@ -256,7 +256,7 @@ test(
         );
         await page.locator('[data-square="a4"]',).click({ modifiers: ["Control",], },);
         const state = await page.evaluate(() => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
 
             return {
                 marks: board.get_marks(),
@@ -277,7 +277,7 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
-            await page.evaluate(() => document.querySelector("meson-chessboard",).clear_marks(),);
+            await page.evaluate(() => document.querySelector("chess-board",).clear_marks(),);
             const origin = await get_square_center(
                 page,
                 "d4",
@@ -299,10 +299,10 @@ for (const orientation of ["white", "black",]) {
             );
             await page.mouse.up();
             await page.keyboard.up("Control",);
-            expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_marks(),),).toEqual([
+            expect(await page.evaluate(() => document.querySelector("chess-board",).get_marks(),),).toEqual([
                 { from: "d4", to: "f4", },
             ],);
-            expect(await page.evaluate(() => document.querySelector("meson-chessboard",).get_uci_moves(),),).toEqual([],);
+            expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual([],);
         },
     );
 }
@@ -315,7 +315,7 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
-            await page.evaluate(() => document.querySelector("meson-chessboard",).clear_marks(),);
+            await page.evaluate(() => document.querySelector("chess-board",).clear_marks(),);
             const origin = await get_square_center(
                 page,
                 "d4",

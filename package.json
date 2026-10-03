@@ -1,9 +1,17 @@
 {
-    "name": "@mesonsystems/chessboard",
+    "name": "@mayazrakib/chessboard",
     "version": "1.0.1",
     "description": "An elegant, highly-customizable chessboard.",
     "author": "Mayaz Rakib",
     "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mayazrakib/chessboard.git"
+    },
+    "bugs": {
+        "url": "https://github.com/mayazrakib/chessboard/issues"
+    },
+    "homepage": "https://github.com/mayazrakib/chessboard#readme",
     "type": "module",
     "sideEffects": [
         "./dist/index.js",

@@ -527,7 +527,7 @@ document.addEventListener(
             return;
         }
 
-        const has_other_board = event.composedPath().some((element,) => element instanceof HTMLElement && element.localName === "meson-chessboard" && element !== board,);
+        const has_other_board = event.composedPath().some((element,) => element instanceof HTMLElement && element.localName === "chess-board" && element !== board,);
 
         if (has_other_board) {
             return;

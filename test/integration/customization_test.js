@@ -12,7 +12,7 @@ define_chessboard();
 afterEach(() => document.body.replaceChildren(),);
 
 function create_board() {
-    const board = document.createElement("meson-chessboard",);
+    const board = document.createElement("chess-board",);
     board.set_options({ animation_duration: 0, is_muted: true, },);
     document.body.append(board,);
 

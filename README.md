@@ -1,4 +1,4 @@
-# `@mesonsystems/chessboard`
+# chessboard
 
 ---
 
@@ -6,7 +6,7 @@
 [![Coverage](https://img.shields.io/badge/Coverage-92.3%25-237c65)](#development-and-verification)
 [![License: MIT](https://img.shields.io/badge/License-MIT-237c65)](LICENSE)
 
-`@mesonsystems/chessboard` is a framework-independent web component for an elegant, highly-customizable chess board.
+chessboard is a framework-independent web component for an elegant, highly-customizable chess board.
 
 It features:
 
@@ -31,7 +31,7 @@ It is authored by Mayaz Rakib.
 Install the package from a registry where it is available:
 
 ```sh
-npm install @mesonsystems/chessboard
+npm install @mayazrakib/chessboard
 ```
 
 For a checkout that has not been published, run `npm ci` and `npm pack` in this directory, then install the resulting archive in the consuming application. The package exports ECMAScript modules and TypeScript declarations.
@@ -39,23 +39,23 @@ For a checkout that has not been published, run `npm ci` and `npm pack` in this 
 Import the package once to register the element:
 
 ```ts
-import "@mesonsystems/chessboard";
+import "@mayazrakib/chessboard";
 ```
 
 Give the element a width in the page layout:
 
 ```html
-<meson-chessboard
+<chess-board
     id="board"
     orientation="white"
     style="width: min(100%, 36rem)"
-></meson-chessboard>
+></chess-board>
 ```
 
 Use the typed element after registration:
 
 ```ts
-const board = document.querySelector("meson-chessboard",);
+const board = document.querySelector("chess-board",);
 
 if (!board) {
     throw new Error("Failed to find the chessboard.",);
@@ -307,7 +307,7 @@ board.play_sound("win",);
 
 Explicit playback is useful for application-owned results such as resignation or time expiration. The board does not infer those results. `play_sound()` honors muting, the effect switch, recording overrides, and the selected operation preference. `set_muted(true,)` immediately stops playback; `is_muted()` reads the state. Settings are independent across boards.
 
-Browser autoplay restrictions can prevent playback before user interaction. Blocked sounds are discarded, and unexpected media failures emit `audio_failed`. The playground's Effects tab previews sounds and board effects. The Customize tab controls volume and result perspective. The package exports recordings under `@mesonsystems/chessboard/audio/*.mp3`.
+Browser autoplay restrictions can prevent playback before user interaction. Blocked sounds are discarded, and unexpected media failures emit `audio_failed`. The playground's Effects tab previews sounds and board effects. The Customize tab controls volume and result perspective. The package exports recordings under `@mayazrakib/chessboard/audio/*.mp3`.
 
 ## Public Methods
 
@@ -405,14 +405,14 @@ Material counts pawns as one point, knights and bishops as three, rooks as five,
 The component uses an open shadow root. Override CSS custom properties on the host or style a supported part:
 
 ```css
-meson-chessboard {
+chess-board {
     --chessboard-light: #ede8dc;
     --chessboard-dark: #80937e;
     --chessboard-focus-color: #2459ad;
     --chessboard-overlay-color: #142d45;
 }
 
-meson-chessboard::part(promotion-panel) {
+chess-board::part(promotion-panel) {
     border-radius: 12px;
 }
 ```
@@ -461,7 +461,7 @@ Invalid option updates throw directly. An asset-load failure rejects readiness. 
 `PgnReplay` parses PGN without initially changing the board. Load the replay before seeking:
 
 ```ts
-import { PgnReplay, } from "@mesonsystems/chessboard/replay";
+import { PgnReplay, } from "@mayazrakib/chessboard/replay";
 
 const replay = new PgnReplay(
     board,
@@ -488,7 +488,7 @@ Use the core entry point when the application needs explicit registration or ass
 import {
     configure_chessboard_assets,
     define_chessboard,
-} from "@mesonsystems/chessboard/core";
+} from "@mayazrakib/chessboard/core";
 
 configure_chessboard_assets({
     piece_sprite_url: "/assets/chess/pieces.svg",

@@ -17,7 +17,7 @@ await import("../../dist/index.js",);
 const START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 function create_drag_board(options = {},) {
-    const board = document.createElement("meson-chessboard",);
+    const board = document.createElement("chess-board",);
     document.body.append(board,);
     board.set_options({
         animation_duration: 0,

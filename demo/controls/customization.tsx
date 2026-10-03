@@ -30,9 +30,9 @@ export function CustomizationControls() {
     useEffect(
         () => {
             let is_active = true;
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             const update = () => set_options(board!.get_options(),);
-            void customElements.whenDefined("meson-chessboard",).then(() => {
+            void customElements.whenDefined("chess-board",).then(() => {
                 if (is_active && board) {
                     update();
                     board.addEventListener(
@@ -55,7 +55,7 @@ export function CustomizationControls() {
 
     function update_options(changes: ChessboardOptions,) {
         try {
-            document.querySelector("meson-chessboard",)!.set_options(changes,);
+            document.querySelector("chess-board",)!.set_options(changes,);
             show_message("Settings updated.",);
         } catch (error) {
             show_message(
@@ -132,7 +132,7 @@ export function CustomizationControls() {
                 <Button type="button" variant="outline" onClick={() => update_options({ renderers: { square_overlay: (context,) => context.square === "e4" ? "Target" : null, }, },)}>Show square overlay</Button>
                 <Button type="button" variant="outline" onClick={() => update_options({ promotion: { mode: "automatic", default_piece: "n", }, },)}>Promote to knight</Button>
                 <Button type="button" variant="outline" onClick={() => {
-                    document.querySelector("meson-chessboard",)!.reset_options();
+                    document.querySelector("chess-board",)!.reset_options();
                     show_message("Settings restored to defaults.",);
                 }}>Reset settings</Button>
             </div>

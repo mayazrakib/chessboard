@@ -45,7 +45,7 @@ for (const orientation of ["white", "black",]) {
                 await page.locator(".board.ready",).waitFor();
                 const observations = await page.evaluate(
                     ({ scenario, orientation, },) => {
-                        const board = document.querySelector("meson-chessboard",);
+                        const board = document.querySelector("chess-board",);
                         board.set_options({
                             orientation,
                             animation_duration: 0,
@@ -111,7 +111,7 @@ test(
             await page.emulateMedia({ reducedMotion: has_reduced_motion ? "reduce" : "no-preference", },);
             const animation_count = await page.evaluate(
                 (has_reduced_motion,) => {
-                    const board = document.querySelector("meson-chessboard",);
+                    const board = document.querySelector("chess-board",);
                     board.set_options({ animation_duration: has_reduced_motion ? 180 : 0, },);
                     board.move_uci("e2e4",);
                     board.undo();
@@ -131,7 +131,7 @@ test(
         await page.goto("/test/browser/drag.html",);
         await page.locator(".board.ready",).waitFor();
         const state = await page.evaluate(async () => {
-            const board = document.querySelector("meson-chessboard",);
+            const board = document.querySelector("chess-board",);
             board.set_options({ animation_duration: 80, },);
             const initial_position = board.get_position();
             board.move_uci("e2e4",);

@@ -305,7 +305,7 @@ export function initialize_inspection(
                 return;
             }
 
-            const second_board = document.createElement("meson-chessboard",);
+            const second_board = document.createElement("chess-board",);
             second_board.setAttribute(
                 "aria-label",
                 "Independent test board",

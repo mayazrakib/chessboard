@@ -14,14 +14,14 @@ globalThis.cancelAnimationFrame = browser_window.cancelAnimationFrame.bind(brows
 
 const { configure_chessboard_assets, define_chessboard, PgnReplay, } = await import("../../dist/core.js",);
 assert.equal(
-    customElements.get("meson-chessboard",),
+    customElements.get("chess-board",),
     undefined,
 );
 configure_chessboard_assets({ stylesheet_url: null, },);
 define_chessboard();
 
 function create_board() {
-    const board = document.createElement("meson-chessboard",);
+    const board = document.createElement("chess-board",);
     document.body.append(board,);
     board.set_options({ animation_duration: 0, },);
 

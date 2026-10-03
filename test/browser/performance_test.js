@@ -8,11 +8,11 @@ test.describe("Performance budgets", () => {
         async ({ page, },) => {
             await page.goto("/test/browser/drag.html",);
             const timings = await page.evaluate(async () => {
-                const original = document.querySelector("meson-chessboard",);
+                const original = document.querySelector("chess-board",);
                 await original.when_ready();
                 original.remove();
                 const single_start = performance.now();
-                const single = document.createElement("meson-chessboard",);
+                const single = document.createElement("chess-board",);
                 single.set_options({ animation_duration: 0, is_muted: true, quality_profile: "minimal", },);
                 document.body.append(single,);
                 await single.when_ready();
@@ -29,7 +29,7 @@ test.describe("Performance budgets", () => {
                 const boards = Array.from(
                     { length: 10, },
                     () => {
-                        const board = document.createElement("meson-chessboard",);
+                        const board = document.createElement("chess-board",);
                         board.set_options({ animation_duration: 0, is_muted: true, quality_profile: "minimal", },);
                         document.body.append(board,);
 
@@ -62,7 +62,7 @@ test.describe("Performance budgets", () => {
                 "Emulation.setCPUThrottlingRate",
                 { rate: 4, },
             );
-            const board = page.locator("meson-chessboard",);
+            const board = page.locator("chess-board",);
             const e2 = board.getByRole(
                 "gridcell",
                 { name: /^e2,/, },
@@ -95,7 +95,7 @@ test.describe("Performance budgets", () => {
                 document.body.append(container,);
 
                 for (let index = 0; index < 25; index += 1) {
-                    container.append(document.createElement("meson-chessboard",),);
+                    container.append(document.createElement("chess-board",),);
                 }
 
                 await Promise.all([...container.children,].map((candidate,) => candidate.when_ready(),),);
