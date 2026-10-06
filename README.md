@@ -4,7 +4,7 @@
 
 [Try the live playground.](https://playground.mayazrakib.com/chessboard/)
 
-![Chessboard example](asset/chessboard.png)
+<img src="asset/chessboard.png" alt="Chessboard example" width="60%">
 
 ## Install
 
