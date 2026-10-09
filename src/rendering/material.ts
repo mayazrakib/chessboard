@@ -1,9 +1,9 @@
 import type { Color, PieceSymbol, } from "chess.js";
 
-import { type BoardLabels, DEFAULT_LABELS, type MaterialContext, } from "./configuration.js";
+import type { CapturedPieceDisplay, } from "../api/types.js";
+import { type RulesGame, } from "../chess/rules.js";
+import { type BoardLabels, DEFAULT_LABELS, type MaterialContext, } from "../configuration/options.js";
 import { create_piece_art, get_promotion_name, } from "./pieces.js";
-import type { RulesGame, } from "./rules.js";
-import type { CapturedPieceDisplay, } from "./types.js";
 
 const PIECE_POINTS: Record<
     PieceSymbol,

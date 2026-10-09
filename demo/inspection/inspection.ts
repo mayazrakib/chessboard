@@ -1,8 +1,8 @@
 import type { Square, } from "chess.js";
 
-import type { ChessboardElement, } from "../../src/chessboard";
-import { is_point_over_piece, } from "../../src/pieces";
-import type { BoardMark, } from "../../src/types";
+import type { BoardMark, } from "../../src/api/types";
+import type { ChessboardElement, } from "../../src/element/chessboard_element";
+import { is_point_over_piece, } from "../../src/rendering/pieces";
 import { BOARD_EVENTS, STYLE_PROPERTIES, TEST_POSITIONS, } from "./inspection_catalog";
 
 const MAXIMUM_EVENT_COUNT = 100;

@@ -1,6 +1,6 @@
 import type { Color, Move, Piece, PieceSymbol, Square, } from "chess.js";
 
-import type { CustomizationOptions, ResolvedCustomization, } from "./configuration.js";
+import type { CustomizationOptions, ResolvedCustomization, } from "../configuration/options.js";
 
 export type { Color, Move, Piece, PieceSymbol, Square, } from "chess.js";
 

@@ -20,7 +20,10 @@ for (const orientation of ["white", "black",]) {
                         board.set_options({ orientation, is_muted: true, },);
                         board.set_position(scenario.fen,);
                         const move = board.move_uci(scenario.move,);
-                        const target = scenario.move.slice(2, 4,);
+                        const target = scenario.move.slice(
+                            2,
+                            4,
+                        );
                         const attacker = board.shadowRoot.querySelector(`[data-square="${target}"] .piece`,);
                         const victim = board.shadowRoot.querySelector(`[data-square="${scenario.captured_square}"] .piece:not([data-color="${scenario.color}"])`,);
 

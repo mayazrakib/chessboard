@@ -1,7 +1,12 @@
 import { expect, test, } from "@playwright/test";
 
-test.describe("Performance budgets", () => {
-    test.skip(({ browserName, },) => browserName !== "chromium", "Performance budgets run in the reference Chromium environment.",);
+test.describe(
+    "Performance budgets",
+    () => {
+        test.skip(
+            ({ browserName, },) => browserName !== "chromium",
+            "Performance budgets run in the reference Chromium environment.",
+        );
 
     test(
         "Renders one board and ten concurrent boards within their budgets.",
@@ -105,10 +110,17 @@ test.describe("Performance budgets", () => {
 
                 return {
                     connected: boards.filter((candidate,) => candidate.isConnected,).length,
-                    running_animations: boards.reduce((count, candidate,) => count + candidate.shadowRoot.getAnimations().filter((animation,) => animation.playState === "running",).length, 0,),
+                    running_animations: boards.reduce(
+                        (
+                            count,
+                            candidate,
+                        ) => count + candidate.shadowRoot.getAnimations().filter((animation,) => animation.playState === "running",).length,
+                        0,
+                    ),
                 };
             },);
             expect(cleanup,).toEqual({ connected: 0, running_animations: 0, },);
         },
     );
-},);
+    },
+);

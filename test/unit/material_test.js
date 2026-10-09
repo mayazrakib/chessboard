@@ -3,7 +3,7 @@ import { test, } from "node:test";
 
 import { Chess, } from "chess.js";
 
-import { render_material_rows, } from "../../dist/material.js";
+import { render_material_rows, } from "../../dist/rendering/material.js";
 import { create_dom_environment, } from "./dom.js";
 
 create_dom_environment();

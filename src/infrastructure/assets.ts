@@ -1,12 +1,12 @@
-import type { ChessboardAssets, } from "./types.js";
+import type { ChessboardAssets, } from "../api/types.js";
 
 const DEFAULT_ASSETS: Required<ChessboardAssets> = {
     stylesheet_url: new URL(
-        "./style.css",
+        "../style.css",
         import.meta.url,
     ).href,
     piece_sprite_url: new URL(
-        "../asset/pieces/pieces.svg",
+        "../../asset/pieces/pieces.svg",
         import.meta.url,
     ).href,
 };

@@ -1,6 +1,6 @@
 import type { Square, } from "chess.js";
 
-import type { ChessboardElement, } from "./chessboard.js";
+import type { ChessboardElement, } from "./element/chessboard_element.js";
 import type {
     AnnotationsDetail,
     BoardMark,
@@ -12,15 +12,15 @@ import type {
     MoveInput,
     MoveRequest,
     MoveRequestEndDetail,
-} from "./types.js";
+} from "./api/types.js";
 
-export { configure_chessboard_assets, } from "./asset.js";
-export { ChessboardElement, define_chessboard, } from "./chessboard.js";
-export type { BoardSound, } from "./audio.js";
-export type { AccessibilityOptions, AnnotationOptions, BoardLabels, BoardRenderers, CustomizationOptions, InteractionOptions, KeyboardShortcuts, MaterialContext, PieceKey, PieceOptions, PromotionOptions, ResolvedCustomization, SoundOptions, SquareContext, } from "./configuration.js";
+export { configure_chessboard_assets, } from "./infrastructure/assets.js";
+export { ChessboardElement, define_chessboard, } from "./element/chessboard_element.js";
+export type { BoardSound, } from "./media/audio.js";
+export type { AccessibilityOptions, AnnotationOptions, BoardLabels, BoardRenderers, CustomizationOptions, InteractionOptions, KeyboardShortcuts, MaterialContext, PieceKey, PieceOptions, PromotionOptions, ResolvedCustomization, SoundOptions, SquareContext, } from "./configuration/options.js";
 export { PgnReplay, } from "./replay.js";
-export { STANDARD_RULES_PROVIDER, } from "./rules.js";
-export type { RulesGame, RulesProvider, } from "./rules.js";
+export { STANDARD_RULES_PROVIDER, } from "./chess/rules.js";
+export type { RulesGame, RulesProvider, } from "./chess/rules.js";
 export type {
     Annotation,
     AnnotationsDetail,
@@ -51,7 +51,7 @@ export type {
     QualityProfile,
     ResolvedChessboardOptions,
     Square,
-} from "./types.js";
+} from "./api/types.js";
 
 declare global {
 

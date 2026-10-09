@@ -19,7 +19,9 @@
     ],
     "files": [
         "dist",
-        "asset",
+        "asset/audio",
+        "asset/pieces",
+        "asset/LICENSING.md",
         "README.md",
         "LICENSE"
     ],
@@ -45,7 +47,7 @@
     },
     "scripts": {
         "build": "node scripts/build.js",
-        "check": "tsc --noEmit && tsc --project tsconfig.demo.json",
+        "check": "node scripts/check_style.mjs && tsc --noEmit && tsc --project tsconfig.demo.json",
         "dev": "vite --host 127.0.0.1 --port 31415 --strictPort",
         "test": "npm run build && node --test test/unit/*_test.js test/integration/*_test.js",
         "test:unit": "npm run build && node --test test/unit/*_test.js",

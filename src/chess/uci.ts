@@ -1,6 +1,6 @@
 import type { PieceSymbol, Square, } from "chess.js";
 
-import type { MoveInput, } from "./types.js";
+import type { MoveInput, } from "../api/types.js";
 
 const UCI_MOVE_PATTERN = /^([a-h][1-8])([a-h][1-8])([qrbn])?$/;
 

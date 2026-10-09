@@ -1,6 +1,6 @@
 import { type Move, } from "chess.js";
 
-import type { ChessboardElement, } from "./chessboard.js";
+import type { ChessboardElement, } from "./element/chessboard_element.js";
 
 export class PgnReplay {
     readonly moves: readonly Move[];

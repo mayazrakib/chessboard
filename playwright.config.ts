@@ -39,7 +39,8 @@ export default defineConfig({
         trace: "retain-on-failure",
     },
     webServer: {
-        command: `npx vite --host ${TEST_SERVER_HOST} --port ${TEST_SERVER_PORT} --strictPort`,
+        command: `node_modules/.bin/vite --host ${TEST_SERVER_HOST} --port ${TEST_SERVER_PORT} --strictPort`,
+        reuseExistingServer: true,
         url: TEST_SERVER_URL,
     },
 },);

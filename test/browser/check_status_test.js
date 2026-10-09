@@ -42,7 +42,10 @@ for (const orientation of ["white", "black",]) {
                 "box-shadow",
                 "none",
             );
-            expect(await outline.evaluate((node,) => getComputedStyle(node, "::before",).backgroundImage,),).toContain("radial-gradient",);
+            expect(await outline.evaluate((node,) => getComputedStyle(
+                node,
+                "::before",
+            ).backgroundImage,),).toContain("radial-gradient",);
             await king.click();
             await expect(outline,).toHaveCSS(
                 "border-top-color",
@@ -56,7 +59,10 @@ for (const orientation of ["white", "black",]) {
                 "animation-name",
                 "none",
             );
-            expect(await outline.evaluate((node,) => getComputedStyle(node, "::before",).animationName,),).toBe("checkmate_glow",);
+            expect(await outline.evaluate((node,) => getComputedStyle(
+                node,
+                "::before",
+            ).animationName,),).toBe("checkmate_glow",);
             await expect(outline,).toHaveCSS(
                 "box-shadow",
                 "none",
@@ -117,7 +123,13 @@ test(
             "box-shadow",
             "none",
         );
-        expect(await outline.evaluate((node,) => getComputedStyle(node, "::before",).animationName,),).toBe("none",);
-        expect(await outline.evaluate((node,) => getComputedStyle(node, "::before",).backgroundImage,),).toContain("radial-gradient",);
+        expect(await outline.evaluate((node,) => getComputedStyle(
+            node,
+            "::before",
+        ).animationName,),).toBe("none",);
+        expect(await outline.evaluate((node,) => getComputedStyle(
+            node,
+            "::before",
+        ).backgroundImage,),).toContain("radial-gradient",);
     },
 );

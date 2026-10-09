@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, } from "node:test";
 
-import { create_piece_art, get_piece_name, get_promotion_name, is_point_over_piece, } from "../../dist/pieces.js";
+import { create_piece_art, get_piece_name, get_promotion_name, is_point_over_piece, } from "../../dist/rendering/pieces.js";
 import { create_dom_environment, } from "./dom.js";
 
 create_dom_environment();

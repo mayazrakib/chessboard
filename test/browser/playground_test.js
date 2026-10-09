@@ -58,8 +58,14 @@ test(
             board_bounds.y,
             1,
         );
-        await expect(controls.getByText("Playground", { exact: true, },),).toBeVisible();
-        await expect(controls.getByRole("heading", { name: "Chessboard", exact: true, },),).toBeVisible();
+        await expect(controls.getByText(
+            "Playground",
+            { exact: true, },
+        ),).toBeVisible();
+        await expect(controls.getByRole(
+            "heading",
+            { name: "Chessboard", exact: true, },
+        ),).toBeVisible();
         await expect(page.locator(".playground > .playground_header",),).toHaveCount(0,);
     },
 );

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, test, } from "node:test";
 
-import { configure_chessboard_assets, resolve_assets, } from "../../dist/asset.js";
+import { configure_chessboard_assets, resolve_assets, } from "../../dist/infrastructure/assets.js";
 
 const DEFAULT_ASSETS = resolve_assets({},);
 

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, } from "node:test";
 
-import { format_uci_move, parse_uci_move, } from "../../dist/uci.js";
+import { format_uci_move, parse_uci_move, } from "../../dist/chess/uci.js";
 
 for (const notation of ["e2e4", "e1g1", "e8c8", "a7a8q", "a7a8r", "h2h1b", "h2h1n",]) {
     test(

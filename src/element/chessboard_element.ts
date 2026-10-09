@@ -1,9 +1,10 @@
 import { type Color, DEFAULT_POSITION, type Move, type Piece, type PieceSymbol, type Square, } from "chess.js";
 
-import { resolve_assets, } from "./asset.js";
-import { BoardAudio, type BoardSound, } from "./audio.js";
-import { type CustomizationOptions, matches_shortcut, resolve_customization, } from "./configuration.js";
-import { render_material_rows, } from "./material.js";
+import { resolve_assets, } from "../infrastructure/assets.js";
+import { BoardAudio, type BoardSound, } from "../media/audio.js";
+import { matches_shortcut, resolve_customization, } from "../configuration/options.js";
+import { validate_options, } from "../configuration/validation.js";
+import { render_material_rows, } from "../rendering/material.js";
 import {
     advance_drag_spring,
     create_move_keyframes,
@@ -12,9 +13,9 @@ import {
     DRAG_SCALE_THRESHOLD,
     get_drag_tilt_degrees,
     MOVE_EASING,
-} from "./motion.js";
-import { create_piece_art, get_piece_name, get_promotion_name, is_point_over_piece, } from "./pieces.js";
-import { type RulesGame, type RulesProvider, STANDARD_RULES_PROVIDER, } from "./rules.js";
+} from "../interaction/motion.js";
+import { create_piece_art, get_piece_name, get_promotion_name, is_point_over_piece, } from "../rendering/pieces.js";
+import { type RulesGame, type RulesProvider, STANDARD_RULES_PROVIDER, } from "../chess/rules.js";
 import type {
     Annotation,
     BoardMark,
@@ -34,59 +35,32 @@ import type {
     MoveRequest,
     PieceNode,
     PromotionRequest,
-    QualityProfile,
     ResolvedChessboardOptions,
-} from "./types.js";
-import { format_uci_move, parse_uci_move, } from "./uci.js";
+} from "../api/types.js";
+import { format_uci_move, parse_uci_move, } from "../chess/uci.js";
+import {
+    BOARD_SIZE,
+    DEFAULT_ANIMATION_DURATION_MS,
+    DEFAULT_FRAME_DURATION_MS,
+    DEFAULT_OPTIONS,
+    DRAG_MAXIMUM_LAG_SQUARES,
+    DRAG_OFFSET_SETTLE_THRESHOLD_PX,
+    DRAG_VELOCITY_SETTLE_THRESHOLD_PX_PER_SECOND,
+    ERROR_OPERATIONS,
+    FILES,
+    HINT_DURATION_MS,
+    LAST_FILE_INDEX,
+    MAXIMUM_PREMOVES,
+    PROMOTION_DURATION_MS,
+    RETURN_DURATION_MS,
+    STATE_DURATION_MS,
+    SVG_NAMESPACE,
+    THEMES,
+    TILT_RESPONSE_TIME_CONSTANT,
+    TILT_SETTLE_THRESHOLD_DEGREES,
+} from "./constants.js";
 
-const FILES = "abcdefgh";
 const HtmlElementBase = (globalThis.HTMLElement ?? class { }) as typeof HTMLElement;
-const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-const DEFAULT_FRAME_DURATION_MS = 1000 / 60;
-const TILT_SETTLE_THRESHOLD_DEGREES = .02;
-const TILT_RESPONSE_TIME_CONSTANT = 3;
-const DRAG_MAXIMUM_LAG_SQUARES = .16;
-const DRAG_OFFSET_SETTLE_THRESHOLD_PX = .05;
-const DRAG_VELOCITY_SETTLE_THRESHOLD_PX_PER_SECOND = 2;
-const RETURN_DURATION_MS = 220;
-const MAXIMUM_PREMOVES = 32;
-const DEFAULT_ANIMATION_DURATION_MS = 260;
-const HINT_DURATION_MS = 220;
-const STATE_DURATION_MS = 200;
-const BOARD_SIZE = FILES.length;
-const LAST_FILE_INDEX = BOARD_SIZE - 1;
-const PROMOTION_DURATION_MS = 220;
-const THEMES: BoardTheme[] = ["brown", "sage", "slate", "linen",];
-const QUALITY_PROFILES: QualityProfile[] = ["full", "balanced", "minimal",];
-const ERROR_OPERATIONS: Record<
-    ChessboardErrorDetail["reason"],
-    string
-> = {
-    illegal_move: "Failed to make the move",
-    invalid_position: "Failed to load the position",
-    invalid_pgn: "Failed to load the PGN",
-    render_failed: "Failed to render board content",
-    audio_failed: "Failed to play board audio",
-};
-const DEFAULT_OPTIONS: Required<Omit<
-    ChessboardOptions,
-    "piece_renderer" | "premove_color" | "assets" | keyof CustomizationOptions
->> = {
-    orientation: "white",
-    theme: "brown",
-    quality_profile: "full",
-    interactive: true,
-    show_coordinates: true,
-    show_captured_pieces: true,
-    captured_piece_display: "stacked",
-    show_legal_moves: true,
-    show_last_move: true,
-    animation_duration: DEFAULT_ANIMATION_DURATION_MS,
-    move_mode: "automatic",
-    event_detail: "full",
-    playable_color: "both",
-    is_muted: false,
-};
 
 export class ChessboardElement extends HtmlElementBase {
     static get observedAttributes(): string[] {
@@ -894,7 +868,7 @@ export class ChessboardElement extends HtmlElementBase {
     }
 
     set_options(options: ChessboardOptions,): void {
-        this.validate_options(options,);
+        validate_options(options,);
         const customization = resolve_customization(
             options,
             this.customization,
@@ -3467,48 +3441,6 @@ export class ChessboardElement extends HtmlElementBase {
             finish_return,
             finish_return,
         );
-    }
-
-    private validate_options(options: ChessboardOptions,): void {
-        const enums: Partial<Record<
-            keyof ChessboardOptions,
-            readonly string[]
-        >> = {
-            orientation: ["white", "black",],
-            theme: THEMES,
-            quality_profile: QUALITY_PROFILES,
-            captured_piece_display: ["counts", "stacked",],
-            move_mode: ["automatic", "controlled",],
-            event_detail: ["full", "compact",],
-            playable_color: ["w", "b", "both",],
-            premove_color: ["w", "b",],
-        };
-
-        for (const key of Object.keys(options,) as (keyof ChessboardOptions)[]) {
-            const option = options[key];
-
-            if (option === undefined) {
-                continue;
-            }
-
-            const allowed = enums[key];
-
-            if (allowed && !allowed.includes(String(option,),)) {
-                throw new TypeError(`Failed to set options: ${key} is invalid.`,);
-            }
-
-            if (["interactive", "show_coordinates", "show_captured_pieces", "show_legal_moves", "show_last_move", "is_muted",].includes(key,) && typeof option !== "boolean") {
-                throw new TypeError(`Failed to set options: ${key} must be a boolean.`,);
-            }
-        }
-
-        if (options.piece_renderer !== undefined && typeof options.piece_renderer !== "function") {
-            throw new TypeError("Failed to set options: piece_renderer must be a function.",);
-        }
-
-        if (options.assets) {
-            resolve_assets(options.assets,);
-        }
     }
 
     private begin_position_change(

@@ -1,7 +1,10 @@
 import { expect, test, } from "@playwright/test";
 
 function calculate_luminance(rgb,) {
-    const channels = rgb.match(/[\d.]+/g,).slice(0, 3,).map((channel,) => {
+    const channels = rgb.match(/[\d.]+/g,).slice(
+        0,
+        3,
+    ).map((channel,) => {
         const value = Number(channel,) / 255;
 
         return value <= .03928 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;

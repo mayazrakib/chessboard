@@ -1,8 +1,8 @@
 import type { Color, Piece, PieceSymbol, Square, } from "chess.js";
 
-import type { BoardSound, } from "./audio.js";
-import { get_promotion_name, } from "./pieces.js";
-import type { ChessboardErrorDetail, ChessboardStatus, PromotionRequest, } from "./types.js";
+import type { ChessboardErrorDetail, ChessboardStatus, PromotionRequest, } from "../api/types.js";
+import type { BoardSound, } from "../media/audio.js";
+import { get_promotion_name, } from "../rendering/pieces.js";
 
 export type PieceKey = `${Color}${PieceSymbol}`;
 

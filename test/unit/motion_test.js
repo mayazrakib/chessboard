@@ -6,7 +6,7 @@ import {
     create_move_keyframes,
     DRAG_SCALE_THRESHOLD,
     get_drag_tilt_degrees,
-} from "../../dist/motion.js";
+} from "../../dist/interaction/motion.js";
 
 test(
     "Motion starts at the release position and ends without a transform offset.",
@@ -171,7 +171,10 @@ test(
             move_frames.map((frame,) => frame.offset,),
             [0, .82, 1,],
         );
-        assert.ok(drag_frames.every((frame,) => !frame.transform.includes(",", frame.transform.indexOf("scale",),),),);
+        assert.ok(drag_frames.every((frame,) => !frame.transform.includes(
+            ",",
+            frame.transform.indexOf("scale",),
+        ),),);
         assert.equal(
             drag_frames.at(-1,).transform,
             move_frames.at(-1,).transform,

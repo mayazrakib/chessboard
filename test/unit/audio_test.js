@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, } from "node:test";
 
-import { BoardAudio, } from "../../dist/audio.js";
+import { BoardAudio, } from "../../dist/media/audio.js";
 
 function create_player() {
     const calls = [];

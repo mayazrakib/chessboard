@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test, } from "node:test";
 
-import { matches_shortcut, resolve_customization, } from "../../dist/configuration.js";
+import { matches_shortcut, resolve_customization, } from "../../dist/configuration/options.js";
 
 for (const changes of [
     { interaction: { drag_threshold_px: -1, }, },

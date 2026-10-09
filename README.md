@@ -72,6 +72,8 @@ npm run test:package
 
 `npm pack` creates an installable archive. See [package.json](package.json) for exports and [asset licensing](asset/LICENSING.md) for the piece art and sound terms.
 
+The source tree keeps public entry points at `src/index.ts`, `src/core.ts`, and `src/replay.ts`. Internal chess, configuration, element, infrastructure, interaction, media, and rendering modules live in their matching `src/` directories.
+
 ## License
 
 The library is [MIT licensed](LICENSE). CBurnett piece art and sound recordings have separate attribution and licence terms in [asset licensing](asset/LICENSING.md).

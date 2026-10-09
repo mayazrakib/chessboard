@@ -1,8 +1,8 @@
 import type { PieceSymbol, Square, } from "chess.js";
 
-import type { ChessboardElement, } from "../src/chessboard.ts";
+import type { ChessboardElement, } from "../src/element/chessboard_element.ts";
 import "../src/index.ts";
-import type { BoardMark, BoardTheme, MarkColor, Orientation, } from "../src/types.ts";
+import type { BoardMark, BoardTheme, MarkColor, Orientation, } from "../src/api/types.ts";
 
 import { update_control, } from "./controls/control_bindings";
 import { initialize_inspection, } from "./inspection/inspection";

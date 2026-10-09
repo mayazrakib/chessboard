@@ -61,12 +61,35 @@ try {
         }
     }
 
-    const calculate_size = (prefix, suffix = "",) => archive.files
+    const calculate_size = (
+        prefix,
+        suffix = "",
+    ) => archive.files
         .filter((file,) => file.path.startsWith(prefix,) && file.path.endsWith(suffix,))
-        .reduce((size_bytes, file,) => size_bytes + file.size, 0,);
+        .reduce(
+            (
+                size_bytes,
+                file,
+            ) => size_bytes + file.size,
+            0,
+        );
     const budgets = [
-        ["JavaScript", calculate_size("dist/", ".js",), MAXIMUM_JAVASCRIPT_BYTES,],
-        ["CSS", calculate_size("dist/", ".css",), MAXIMUM_CSS_BYTES,],
+        [
+            "JavaScript",
+            calculate_size(
+                "dist/",
+                ".js",
+            ),
+            MAXIMUM_JAVASCRIPT_BYTES,
+        ],
+        [
+            "CSS",
+            calculate_size(
+                "dist/",
+                ".css",
+            ),
+            MAXIMUM_CSS_BYTES,
+        ],
         ["assets", calculate_size("asset/",), MAXIMUM_ASSET_BYTES,],
         ["unpacked package", archive.unpackedSize, MAXIMUM_UNPACKED_BYTES,],
     ];
@@ -87,7 +110,11 @@ try {
             consumer_directory,
             "package.json",
         ),
-        `${JSON.stringify({ name: "chessboard-package-smoke", private: true, type: "module", }, null, 4,)}\n`,
+        `${JSON.stringify(
+            { name: "chessboard-package-smoke", private: true, type: "module", },
+            null,
+            4,
+        )}\n`,
     );
     const archive_path = join(
         temporary_directory,
