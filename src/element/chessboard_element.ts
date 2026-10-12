@@ -3,7 +3,7 @@ import { type Color, DEFAULT_POSITION, type Move, type Piece, type PieceSymbol, 
 import { resolve_assets, } from "../infrastructure/assets.js";
 import { BoardAudio, type BoardSound, } from "../media/audio.js";
 import { matches_shortcut, resolve_customization, } from "../configuration/options.js";
-import { validate_options, } from "../configuration/validation.js";
+import { validate_annotation, validate_options, } from "../configuration/validation.js";
 import { render_material_rows, } from "../rendering/material.js";
 import {
     advance_drag_spring,
@@ -1256,22 +1256,7 @@ export class ChessboardElement extends HtmlElementBase {
 
         const identifiers = new Set<string>();
         const normalized = annotations.map((annotation,) => {
-            if ((annotation.id !== undefined && typeof annotation.id !== "string") || (annotation.group !== undefined && typeof annotation.group !== "string") || (annotation.label !== undefined && typeof annotation.label !== "string")) {
-                throw new TypeError("Failed to set annotations: identifiers, groups, and labels must be strings.",);
-            }
-
-            if (annotation.source !== undefined && !["user", "engine",].includes(annotation.source,)) {
-                throw new TypeError("Failed to set annotations: the source is invalid.",);
-            }
-
-            if (!/^[a-h][1-8]$/.test(annotation.from,) || (annotation.to !== undefined && !/^[a-h][1-8]$/.test(annotation.to,))) {
-                throw new TypeError("Failed to set annotations: a square is invalid.",);
-            }
-
-            if (annotation.color !== undefined && !["amber", "blue", "green", "red",].includes(annotation.color,)) {
-                throw new TypeError("Failed to set annotations: a color is invalid.",);
-            }
-
+            validate_annotation(annotation,);
             const previous = this.annotations.find((candidate,) => candidate.from === annotation.from && candidate.to === annotation.to && candidate.group === (group ?? annotation.group ?? annotation.source ?? "user"),);
             let id = annotation.id ?? previous?.id;
 

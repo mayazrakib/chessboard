@@ -1,6 +1,6 @@
-import type { ChessboardOptions, } from "../api/types.js";
-import { resolve_assets, } from "../infrastructure/assets.js";
+import type { BoardMark, ChessboardOptions, } from "../api/types.js";
 import { QUALITY_PROFILES, THEMES, } from "../element/constants.js";
+import { resolve_assets, } from "../infrastructure/assets.js";
 
 const BOOLEAN_OPTION_NAMES: (keyof ChessboardOptions)[] = [
     "interactive",
@@ -49,5 +49,23 @@ export function validate_options(options: ChessboardOptions,): void {
 
     if (options.assets) {
         resolve_assets(options.assets,);
+    }
+}
+
+export function validate_annotation(annotation: BoardMark,): void {
+    if ((annotation.id !== undefined && typeof annotation.id !== "string") || (annotation.group !== undefined && typeof annotation.group !== "string") || (annotation.label !== undefined && typeof annotation.label !== "string")) {
+        throw new TypeError("Failed to set annotations: identifiers, groups, and labels must be strings.",);
+    }
+
+    if (annotation.source !== undefined && !["user", "engine",].includes(annotation.source,)) {
+        throw new TypeError("Failed to set annotations: the source is invalid.",);
+    }
+
+    if (!/^[a-h][1-8]$/.test(annotation.from,) || (annotation.to !== undefined && !/^[a-h][1-8]$/.test(annotation.to,))) {
+        throw new TypeError("Failed to set annotations: a square is invalid.",);
+    }
+
+    if (annotation.color !== undefined && !["amber", "blue", "green", "red",].includes(annotation.color,)) {
+        throw new TypeError("Failed to set annotations: a color is invalid.",);
     }
 }
