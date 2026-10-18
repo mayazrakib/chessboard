@@ -8,26 +8,32 @@ const SOUND_URLS: Record<
         "../../asset/audio/notification.mp3",
         import.meta.url,
     ).href,
+
     lose: new URL(
         "../../asset/audio/notification.mp3",
         import.meta.url,
     ).href,
+
     move: new URL(
         "../../asset/audio/move.mp3",
         import.meta.url,
     ).href,
+
     capture: new URL(
         "../../asset/audio/capture.mp3",
         import.meta.url,
     ).href,
+
     check: new URL(
         "../../asset/audio/check.mp3",
         import.meta.url,
     ).href,
+
     checkmate: new URL(
         "../../asset/audio/checkmate.mp3",
         import.meta.url,
     ).href,
+
     draw: new URL(
         "../../asset/audio/notification.mp3",
         import.meta.url,
@@ -49,7 +55,10 @@ export class BoardAudio {
 
     play(
         sound: BoardSound,
-        settings: { volume?: number; url?: string | null; } = {},
+        settings: {
+            volume?: number;
+            url?: string | null;
+        } = {},
     ): void {
         if (settings.url === null) {
             return;

@@ -1,7 +1,7 @@
 "use client"
 
 import { Tabs, } from "@base-ui/react/tabs"
-import { cva, type VariantProps, } from "class-variance-authority"
+import { type VariantProps, cva, } from "class-variance-authority"
 import { cn, } from "cn"
 
 function ChessboardTabs({
@@ -38,6 +38,7 @@ const TABS_LIST_VARIANTS = cva(
                 line: "gap-1 bg-transparent",
             },
         },
+
         defaultVariants: {
             variant: "default",
         },

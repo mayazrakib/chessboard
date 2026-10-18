@@ -5,11 +5,13 @@ const DEFAULT_ASSETS: Required<ChessboardAssets> = {
         "../style.css",
         import.meta.url,
     ).href,
+
     piece_sprite_url: new URL(
         "../../asset/pieces/pieces.svg",
         import.meta.url,
     ).href,
 };
+
 let configured_assets = { ...DEFAULT_ASSETS, };
 
 export function resolve_assets(assets: ChessboardAssets,): Required<ChessboardAssets> {

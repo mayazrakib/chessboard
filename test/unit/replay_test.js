@@ -10,14 +10,29 @@ const SAMPLE_PGN = '[White "Ada"]\n[Black "Grace"]\n\n1. e4 e5 2. Nf3 Nc6 *';
 function create_replay(pgn = SAMPLE_PGN,) {
     const game = new Chess();
     const calls = [];
-    const state = { revision: 0, should_accept_pgn: true, seek_error: null, on_seek: null, };
+
+    const state = {
+        revision: 0,
+        should_accept_pgn: true,
+        seek_error: null,
+        on_seek: null,
+    };
+
     const board = {
         create_game: () => new Chess(),
         get_position: () => game.fen(),
         get_revision: () => state.revision,
-        set_premove: (input,) => calls.push({ operation: "premove", input, },),
+
+        set_premove: (input,) => calls.push({
+            operation: "premove",
+            input,
+        },),
+
         set_pgn: (notation,) => {
-            calls.push({ operation: "load", notation, },);
+            calls.push({
+                operation: "load",
+                notation,
+            },);
 
             if (!state.should_accept_pgn) {
                 return false;
@@ -28,8 +43,13 @@ function create_replay(pgn = SAMPLE_PGN,) {
 
             return true;
         },
+
         seek_history: (index,) => {
-            calls.push({ operation: "seek", index, },);
+            calls.push({
+                operation: "seek",
+                index,
+            },);
+
             state.on_seek?.();
 
             if (state.seek_error) {
@@ -40,12 +60,19 @@ function create_replay(pgn = SAMPLE_PGN,) {
             state.revision += 1;
         },
     };
+
     const replay = new PgnReplay(
         board,
         pgn,
     );
 
-    return { board, calls, game, replay, state, };
+    return {
+        board,
+        calls,
+        game,
+        replay,
+        state,
+    };
 }
 
 test(
@@ -57,22 +84,27 @@ test(
             replay.title,
             "Ada vs Grace",
         );
+
         assert.deepEqual(
             replay.moves.map((move,) => move.san,),
             ["e4", "e5", "Nf3", "Nc6",],
         );
+
         assert.equal(
             replay.starting_position,
             new Chess().fen(),
         );
+
         assert.equal(
             replay.get_index(),
             0,
         );
+
         assert.equal(
             replay.has_current_position(),
             false,
         );
+
         assert.deepEqual(
             calls,
             [],
@@ -91,14 +123,17 @@ for (const pgn of ["", '[White "?"]\n[Black "?"]\n\n*',]) {
                 replay.title,
                 "White vs Black",
             );
+
             assert.equal(
                 replay.moves.length,
                 0,
             );
+
             assert.equal(
                 replay.has_current_position(),
                 true,
             );
+
             assert.doesNotThrow(() => replay.seek(0,),);
         },
     );
@@ -134,9 +169,18 @@ test(
         assert.deepEqual(
             calls,
             [
-                { operation: "premove", input: null, },
-                { operation: "load", notation: replay.pgn, },
-                { operation: "seek", index: 0, },
+                {
+                    operation: "premove",
+                    input: null,
+                },
+                {
+                    operation: "load",
+                    notation: replay.pgn,
+                },
+                {
+                    operation: "seek",
+                    index: 0,
+                },
             ],
         );
 
@@ -147,10 +191,12 @@ test(
                 replay.get_index(),
                 index,
             );
+
             assert.equal(
                 board.get_position(),
                 index === 0 ? replay.starting_position : replay.moves[index - 1].after,
             );
+
             assert.equal(
                 replay.has_current_position(),
                 true,
@@ -178,14 +224,17 @@ for (const index of [-1, 5, 0.5, NaN, Infinity, "1", null,]) {
                 () => replay.seek(index,),
                 RangeError,
             );
+
             assert.equal(
                 calls.length,
                 call_count,
             );
+
             assert.equal(
                 replay.get_index(),
                 0,
             );
+
             assert.equal(
                 replay.has_current_position(),
                 true,
@@ -211,6 +260,7 @@ for (const change of ["revision", "position",]) {
                 replay.has_current_position(),
                 false,
             );
+
             assert.throws(
                 () => replay.seek(1,),
                 /changed outside the replay/,
@@ -233,6 +283,7 @@ test(
         replay.load();
         const seek_error = new Error("The board rejected the seek.",);
         state.seek_error = seek_error;
+
         state.on_seek = () => assert.equal(
             replay.has_current_position(),
             true,
@@ -242,6 +293,7 @@ test(
             () => replay.seek(2,),
             (error,) => error === seek_error,
         );
+
         assert.equal(
             replay.get_index(),
             0,

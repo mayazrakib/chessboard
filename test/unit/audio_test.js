@@ -6,16 +6,19 @@ import { BoardAudio, } from "../../dist/media/audio.js";
 function create_player() {
     const calls = [];
     const errors = [];
+
     const media = {
         currentTime: 10,
         src: "",
         pause: () => calls.push("pause",),
+
         play: () => {
             calls.push("play",);
 
             return Promise.resolve();
         },
     };
+
     const owner_document = {
         createElement: (tag,) => {
             calls.push(tag,);
@@ -23,12 +26,18 @@ function create_player() {
             return media;
         },
     };
+
     const player = new BoardAudio(
         owner_document,
         (error,) => errors.push(error,),
     );
 
-    return { calls, errors, media, player, };
+    return {
+        calls,
+        errors,
+        media,
+        player,
+    };
 }
 
 test(
@@ -53,6 +62,7 @@ test(
                     import.meta.url,
                 ).href,
             );
+
             assert.equal(
                 media.currentTime,
                 0,
@@ -65,10 +75,12 @@ test(
             calls.filter((operation,) => operation === "audio",).length,
             1,
         );
+
         assert.equal(
             calls.filter((operation,) => operation === "play",).length,
             7,
         );
+
         assert.equal(
             calls.at(-1,),
             "pause",
@@ -82,10 +94,12 @@ for (const name of ["NotAllowedError", "AbortError", "NotSupportedError", "Error
             `Audio handles ${name} from ${is_synchronous ? "synchronous" : "asynchronous"} playback.`,
             async () => {
                 const { errors, media, player, } = create_player();
+
                 const playback_error = Object.assign(
                     new Error("Playback failed.",),
                     { name, },
                 );
+
                 media.play = () => {
                     if (is_synchronous) {
                         throw playback_error;
@@ -93,6 +107,7 @@ for (const name of ["NotAllowedError", "AbortError", "NotSupportedError", "Error
 
                     return Promise.reject(playback_error,);
                 };
+
                 player.play("move",);
                 await Promise.resolve();
 

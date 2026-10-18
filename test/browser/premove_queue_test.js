@@ -7,9 +7,14 @@ for (const orientation of ["white", "black",]) {
             async ({ page, },) => {
                 await page.goto("/test/browser/drag.html",);
                 await page.locator(".board.ready",).waitFor();
+
                 await page.evaluate(
                     (orientation,) => {
-                        document.querySelector("chess-board",).set_options({ orientation, is_muted: true, interaction: { can_premove: true, }, },);
+                        document.querySelector("chess-board",).set_options({
+                            orientation,
+                            is_muted: true,
+                            interaction: { can_premove: true, },
+                        },);
                     },
                     orientation,
                 );
@@ -24,16 +29,20 @@ for (const orientation of ["white", "black",]) {
                     } else {
                         const start = await origin.boundingBox();
                         const end = await target.boundingBox();
+
                         await page.mouse.move(
                             start.x + start.width / 2,
                             start.y + start.height / 2,
                         );
+
                         await page.mouse.down();
+
                         await page.mouse.move(
                             end.x + end.width / 2,
                             end.y + end.height / 2,
                             { steps: 5, },
                         );
+
                         await page.mouse.up();
                     }
 
@@ -45,15 +54,30 @@ for (const orientation of ["white", "black",]) {
                 }
 
                 expect(await page.evaluate(() => document.querySelector("chess-board",).get_premoves(),),).toEqual([
-                    { from: "e7", to: "e5", },
-                    { from: "e5", to: "e4", },
-                    { from: "g8", to: "f6", },
+                    {
+                        from: "e7",
+                        to: "e5",
+                    },
+                    {
+                        from: "e5",
+                        to: "e4",
+                    },
+                    {
+                        from: "g8",
+                        to: "f6",
+                    },
                 ],);
+
                 await page.keyboard.press("Escape",);
                 expect(await page.evaluate(() => document.querySelector("chess-board",).get_premoves().length,),).toBe(2,);
                 await expect(page.locator('[data-square="g8"] .piece',),).toHaveCount(1,);
                 await page.keyboard.press("Escape",);
-                expect(await page.evaluate(() => document.querySelector("chess-board",).get_premoves(),),).toEqual([{ from: "e7", to: "e5", },],);
+
+                expect(await page.evaluate(() => document.querySelector("chess-board",).get_premoves(),),).toEqual([{
+                    from: "e7",
+                    to: "e5",
+                },],);
+
                 await expect(page.locator('[data-square="e5"] .piece',),).toHaveCount(1,);
                 await page.evaluate(() => document.querySelector("chess-board",).move_uci("a2a3",),);
                 expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual(["a2a3", "e7e5",],);

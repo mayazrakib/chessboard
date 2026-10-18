@@ -72,6 +72,7 @@ export class PgnReplay {
                 index,
                 "replay",
             );
+
             this.current_index = index;
         } finally {
             this.expected_revision = this.board.get_revision();

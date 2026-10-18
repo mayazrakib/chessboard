@@ -23,7 +23,12 @@ for (const changes of [
     { promotion: { choices: [], }, },
     { promotion: { choices: ["q", "q",], }, },
     { promotion: { mode: "external", }, },
-    { promotion: { mode: "automatic", choices: ["n",], }, },
+    {
+        promotion: {
+            mode: "automatic",
+            choices: ["n",],
+        },
+    },
     { labels: { board: null, }, },
     { renderers: { square_overlay: {}, }, },
 ]) {
@@ -31,6 +36,7 @@ for (const changes of [
         `Invalid customization is rejected: ${JSON.stringify(changes,)}.`,
         () => {
             const previous = resolve_customization({},);
+
             const snapshot = resolve_customization(
                 {},
                 previous,
@@ -40,6 +46,7 @@ for (const changes of [
                 changes,
                 previous,
             ),);
+
             assert.deepEqual(
                 previous,
                 snapshot,
@@ -52,13 +59,26 @@ test(
     "Nested updates merge, explicit undefined restores defaults, and arrays replace earlier bindings.",
     () => {
         const first = resolve_customization({
-            interaction: { can_drag: false, keyboard_shortcuts: { undo: ["u",], }, },
+            interaction: {
+                can_drag: false,
+                keyboard_shortcuts: { undo: ["u",], },
+            },
+
             pieces: { urls: { wn: "/knight.svg", }, },
-            sound: { volume: 0.4, enabled: { check: false, }, },
+
+            sound: {
+                volume: 0.4,
+                enabled: { check: false, },
+            },
         },);
+
         const second = resolve_customization(
             {
-                interaction: { can_drag: undefined, keyboard_shortcuts: { redo: ["r",], }, },
+                interaction: {
+                    can_drag: undefined,
+                    keyboard_shortcuts: { redo: ["r",], },
+                },
+
                 pieces: { urls: { bn: "/black_knight.svg", }, },
                 sound: { volume: undefined, },
             },
@@ -69,26 +89,32 @@ test(
             second.interaction.can_drag,
             true,
         );
+
         assert.deepEqual(
             second.interaction.keyboard_shortcuts.undo,
             ["u",],
         );
+
         assert.deepEqual(
             second.interaction.keyboard_shortcuts.redo,
             ["r",],
         );
+
         assert.equal(
             second.pieces.urls.wn,
             "/knight.svg",
         );
+
         assert.equal(
             second.sound.volume,
             0.6,
         );
+
         assert.equal(
             second.sound.enabled.check,
             false,
         );
+
         second.interaction.keyboard_shortcuts.undo.push("z",);
         second.pieces.urls.wn = "/changed.svg";
 
@@ -96,10 +122,12 @@ test(
             first.interaction.keyboard_shortcuts.undo,
             ["u",],
         );
+
         assert.equal(
             first.pieces.urls.wn,
             "/knight.svg",
         );
+
         assert.equal(
             resolve_customization(
                 { sound: undefined, },
@@ -113,7 +141,13 @@ test(
 test(
     "Keyboard shortcuts require exact modifiers and support empty bindings.",
     () => {
-        const event = { key: "z", ctrlKey: true, shiftKey: true, altKey: false, metaKey: false, };
+        const event = {
+            key: "z",
+            ctrlKey: true,
+            shiftKey: true,
+            altKey: false,
+            metaKey: false,
+        };
 
         assert.equal(
             matches_shortcut(
@@ -122,6 +156,7 @@ test(
             ),
             true,
         );
+
         assert.equal(
             matches_shortcut(
                 event,
@@ -129,6 +164,7 @@ test(
             ),
             false,
         );
+
         assert.equal(
             matches_shortcut(
                 event,

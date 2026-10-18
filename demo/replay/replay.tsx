@@ -1,6 +1,6 @@
 import type { Move, } from "chess.js";
 import { flushSync, } from "react-dom";
-import { createRoot, type Root, } from "react-dom/client";
+import { type Root, createRoot, } from "react-dom/client";
 
 import { Button, } from "../component/button";
 
@@ -21,6 +21,7 @@ export function render_replay_buttons(
 
     if (!root) {
         root = createRoot(container,);
+
         REPLAY_ROOTS.set(
             container,
             root,
@@ -35,5 +36,6 @@ export function render_replay_buttons(
             {move.before.split(" ",)[5]}{move.color === "w" ? "." : "…"} {move.san}
         </Button>
     ),) : <p className="text-sm text-muted-foreground">{empty_message}</p>;
+
     flushSync(() => root.render(controls,),);
 }

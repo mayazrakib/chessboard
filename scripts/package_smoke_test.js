@@ -1,5 +1,5 @@
 import { execFileSync, } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile, } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile, } from "node:fs/promises";
 import { tmpdir, } from "node:os";
 import { join, } from "node:path";
 import { fileURLToPath, } from "node:url";
@@ -8,10 +8,12 @@ const MAXIMUM_ASSET_BYTES = 80_000;
 const MAXIMUM_CSS_BYTES = 25_000;
 const MAXIMUM_JAVASCRIPT_BYTES = 190_000;
 const MAXIMUM_UNPACKED_BYTES = 450_000;
+
 const PACKAGE_DIRECTORY = fileURLToPath(new URL(
     "../",
     import.meta.url,
 ),);
+
 const temporary_directory = await mkdtemp(join(
     tmpdir(),
     "chessboard-package-",
@@ -32,7 +34,9 @@ try {
             encoding: "utf8",
         },
     );
+
     const pack_metadata = JSON.parse(pack_output,);
+
     const archive = Array.isArray(pack_metadata,)
         ? pack_metadata[0]
         : pack_metadata["@mayazrakib/chessboard"];
@@ -73,6 +77,7 @@ try {
             ) => size_bytes + file.size,
             0,
         );
+
     const budgets = [
         [
             "JavaScript",
@@ -104,22 +109,30 @@ try {
         temporary_directory,
         "consumer",
     );
+
     await mkdir(consumer_directory,);
+
     await writeFile(
         join(
             consumer_directory,
             "package.json",
         ),
         `${JSON.stringify(
-            { name: "chessboard-package-smoke", private: true, type: "module", },
+            {
+                name: "chessboard-package-smoke",
+                private: true,
+                type: "module",
+            },
             null,
             4,
         )}\n`,
     );
+
     const archive_path = join(
         temporary_directory,
         archive.filename,
     );
+
     execFileSync(
         "npm",
         [
@@ -135,10 +148,12 @@ try {
             stdio: "inherit",
         },
     );
+
     const verification_path = join(
         consumer_directory,
         "verify.mjs",
     );
+
     await writeFile(
         verification_path,
         `import { readFile, } from "node:fs/promises";
@@ -170,6 +185,7 @@ for (const specifier of [
 }
 `,
     );
+
     execFileSync(
         process.execPath,
         [verification_path,],
@@ -178,6 +194,7 @@ for (const specifier of [
             stdio: "inherit",
         },
     );
+
     console.log(`Verified ${archive.files.length} packaged files and size budgets in a clean consumer.`,);
 } finally {
     await rm(

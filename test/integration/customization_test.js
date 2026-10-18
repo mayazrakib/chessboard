@@ -13,7 +13,12 @@ afterEach(() => document.body.replaceChildren(),);
 
 function create_board() {
     const board = document.createElement("chess-board",);
-    board.set_options({ animation_duration: 0, is_muted: true, },);
+
+    board.set_options({
+        animation_duration: 0,
+        is_muted: true,
+    },);
+
     document.body.append(board,);
 
     return board;
@@ -24,7 +29,12 @@ test(
     () => {
         const board = create_board();
         const other = create_board();
-        board.set_options({ interaction: { can_drag: false, }, sound: { volume: 0.3, }, },);
+
+        board.set_options({
+            interaction: { can_drag: false, },
+            sound: { volume: 0.3, },
+        },);
+
         const options = board.get_options();
         options.interaction.can_drag = true;
         options.sound.enabled.move = false;
@@ -33,22 +43,30 @@ test(
             board.get_options().interaction.can_drag,
             false,
         );
+
         assert.equal(
             other.get_options().interaction.can_drag,
             true,
         );
+
         assert.equal(
             board.get_options().sound.enabled.move,
             true,
         );
+
         assert.throws(
-            () => board.set_options({ orientation: "black", sound: { volume: -1, }, },),
+            () => board.set_options({
+                orientation: "black",
+                sound: { volume: -1, },
+            },),
             RangeError,
         );
+
         assert.equal(
             board.get_options().orientation,
             "white",
         );
+
         board.move_uci("e2e4",);
         const fen = board.get_position();
         board.reset_options();
@@ -57,22 +75,27 @@ test(
             board.get_position(),
             fen,
         );
+
         assert.equal(
             board.get_options().interaction.can_drag,
             true,
         );
+
         assert.equal(
             board.get_options().sound.volume,
             0.6,
         );
+
         assert.equal(
             board.get_options().quality_profile,
             "full",
         );
+
         assert.equal(
             board.get_options().interaction.touch_mode,
             "move",
         );
+
         assert.equal(
             board.get_options().accessibility.announce_moves,
             false,
@@ -85,12 +108,35 @@ for (const [policy, remaining,] of [["all", [],], ["user", ["engine",],], ["grou
         `Left-button clearing applies the ${policy} policy.`,
         () => {
             const board = create_board();
-            board.set_options({ annotations: { clear_on_left_click: policy, clear_groups: ["analysis",], }, },);
-            board.set_annotations([{ id: "user", from: "e4", }, { id: "engine", from: "e2", to: "e4", group: "analysis", source: "engine", },],);
+
+            board.set_options({
+                annotations: {
+                    clear_on_left_click: policy,
+                    clear_groups: ["analysis",],
+                },
+            },);
+
+            board.set_annotations([{
+                id: "user",
+                from: "e4",
+            }, {
+                id: "engine",
+                from: "e2",
+                to: "e4",
+                group: "analysis",
+                source: "engine",
+            },],);
+
             const square = board.shadowRoot.querySelector('[data-square="a3"]',) ?? board.squares.get("a3",);
+
             square.dispatchEvent(new browser_window.PointerEvent(
                 "pointerdown",
-                { bubbles: true, composed: true, button: 0, pointerId: 1, },
+                {
+                    bubbles: true,
+                    composed: true,
+                    button: 0,
+                    pointerId: 1,
+                },
             ),);
 
             assert.deepEqual(
@@ -105,35 +151,46 @@ test(
     "Custom images follow their square, overlays use plain text, and supported parts are exposed.",
     () => {
         const board = create_board();
+
         board.set_options({
             pieces: {
                 resolve_url: (
                     piece,
                     square,
-                ) => `/pieces/${piece.color}${piece.type}/${square}.svg`, scale: 0.8, padding_px: 2,
+                ) => `/pieces/${piece.color}${piece.type}/${square}.svg`,
+
+                scale: 0.8,
+                padding_px: 2,
             },
+
             renderers: { square_overlay: (context,) => context.square === "e4" ? "<b>Target</b>" : null, },
         },);
+
         board.move_uci("e2e4",);
         const square = board.squares.get("e4",);
 
         assert.ok(square.querySelector('img[src="/pieces/wp/e4.svg"]',),);
+
         assert.equal(
             square.querySelector(".square_overlay",).textContent,
             "<b>Target</b>",
         );
+
         assert.equal(
             square.querySelector(".square_overlay b",),
             null,
         );
+
         assert.equal(
             square.getAttribute("part",),
             "square",
         );
+
         assert.equal(
             board.shadowRoot.querySelector(".piece",).getAttribute("part",),
             "piece",
         );
+
         board.set_options({ renderers: undefined, },);
 
         assert.equal(
@@ -148,10 +205,12 @@ test(
     () => {
         const board = create_board();
         const errors = [];
+
         board.addEventListener(
             "chessboard:error",
             (event,) => errors.push(event.detail,),
         );
+
         board.set_options({
             labels: {
                 board: "Tablero",
@@ -162,6 +221,7 @@ test(
                 format_material: (context,) => `${context.points} puntos`,
                 format_error: (reason,) => `Error: ${reason}.`,
             },
+
             renderers: { material: (context,) => `Material ${context.points}`, },
         },);
 
@@ -169,21 +229,32 @@ test(
             board.board.getAttribute("aria-label",),
             "Tablero",
         );
+
         assert.equal(
             board.squares.get("a1",).getAttribute("aria-label",),
             "Casilla a1",
         );
+
         assert.equal(
             board.material_rows.w.textContent,
             "Material 39",
         );
-        board.set_options({ renderers: { square_overlay: () => { throw new Error("Overlay failed.",); }, }, },);
+
+        board.set_options({
+            renderers: {
+                square_overlay: () => {
+                    throw new Error("Overlay failed.",);
+                },
+            },
+        },);
 
         assert.ok(errors.length > 0,);
+
         assert.equal(
             errors[0].message,
             "Error: render_failed.",
         );
+
         assert.ok(board.move_uci("e2e4",),);
     },
 );
@@ -193,7 +264,15 @@ test(
     () => {
         const board = create_board();
         board.set_position("7k/P7/8/8/8/8/8/K7 w - - 0 1",);
-        board.set_options({ promotion: { mode: "automatic", default_piece: "n", choices: ["n",], }, },);
+
+        board.set_options({
+            promotion: {
+                mode: "automatic",
+                default_piece: "n",
+                choices: ["n",],
+            },
+        },);
+
         board.try_move(
             "a7",
             "a8",
@@ -203,8 +282,18 @@ test(
             board.game.get("a8",).type,
             "n",
         );
+
         board.set_position("7k/P7/8/8/8/8/8/K7 w - - 0 1",);
-        board.set_options({ promotion: { mode: "choose", choices: ["n", "r",], }, renderers: { promotion_choice: (piece,) => piece.type, }, },);
+
+        board.set_options({
+            promotion: {
+                mode: "choose",
+                choices: ["n", "r",],
+            },
+
+            renderers: { promotion_choice: (piece,) => piece.type, },
+        },);
+
         board.try_move(
             "a7",
             "a8",
@@ -214,6 +303,7 @@ test(
             board.shadowRoot.querySelectorAll(".promotion_choice",).length,
             2,
         );
+
         assert.equal(
             board.shadowRoot.querySelector(".promotion_choice",).textContent,
             "n",
@@ -226,19 +316,25 @@ test(
     () => {
         const board = create_board();
         const complete = [];
+
         board.set_options({
             promotion: {
-                mode: "external", request: (
+                mode: "external",
+
+                request: (
                     request,
                     callback,
                 ) => complete.push(callback,),
             },
         },);
+
         board.set_position("7k/P7/8/8/8/8/8/K7 w - - 0 1",);
+
         board.try_move(
             "a7",
             "a8",
         );
+
         complete[0]("r",);
         const revision = board.get_revision();
         complete[0]("q",);
@@ -247,15 +343,19 @@ test(
             board.game.get("a8",).type,
             "r",
         );
+
         assert.equal(
             board.get_revision(),
             revision,
         );
+
         board.set_position("7k/P7/8/8/8/8/8/K7 w - - 0 1",);
+
         board.try_move(
             "a7",
             "a8",
         );
+
         board.set_position(new Chess().fen(),);
         complete[1]("q",);
 
@@ -271,23 +371,46 @@ test(
     () => {
         const board = create_board();
         const sounds = [];
+
         board.audio.play = (
             sound,
             settings,
-        ) => sounds.push({ sound, settings, },);
-        board.set_options({ is_muted: false, sound: { volume: 0.25, urls: { move: "/move.mp3", }, should_play_on_history: false, }, },);
+        ) => sounds.push({
+            sound,
+            settings,
+        },);
+
+        board.set_options({
+            is_muted: false,
+
+            sound: {
+                volume: 0.25,
+                urls: { move: "/move.mp3", },
+                should_play_on_history: false,
+            },
+        },);
+
         board.move_uci("e2e4",);
         board.undo();
         board.redo();
 
         assert.deepEqual(
             sounds,
-            [{ sound: "move", settings: { volume: 0.25, url: "/move.mp3", }, },],
+            [{
+                sound: "move",
+
+                settings: {
+                    volume: 0.25,
+                    url: "/move.mp3",
+                },
+            },],
         );
+
         const replay = new PgnReplay(
             board,
             "1. e4 e5",
         );
+
         replay.load();
         board.set_options({ sound: { should_play_on_replay: false, }, },);
         replay.seek(1,);
@@ -296,6 +419,7 @@ test(
             sounds.length,
             1,
         );
+
         board.set_options({ sound: { enabled: { move: false, }, }, },);
         board.move_uci("e7e5",);
 
@@ -311,32 +435,58 @@ test(
     () => {
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
-        board.set_premove({ from: "e7", to: "e5", },);
-        board.set_options({ interaction: { can_premove: false, keyboard_shortcuts: { undo: ["u",], }, }, },);
+
+        board.set_premove({
+            from: "e7",
+            to: "e5",
+        },);
+
+        board.set_options({
+            interaction: {
+                can_premove: false,
+                keyboard_shortcuts: { undo: ["u",], },
+            },
+        },);
 
         assert.equal(
             board.get_premove(),
             null,
         );
+
         assert.equal(
-            board.set_premove({ from: "e7", to: "e5", },),
+            board.set_premove({
+                from: "e7",
+                to: "e5",
+            },),
             false,
         );
+
         board.move_uci("e2e4",);
+
         board.board.dispatchEvent(new browser_window.KeyboardEvent(
             "keydown",
-            { bubbles: true, composed: true, key: "u", },
+            {
+                bubbles: true,
+                composed: true,
+                key: "u",
+            },
         ),);
 
         assert.equal(
             board.get_history_state().index,
             0,
         );
+
         board.move_uci("e2e4",);
         board.set_options({ interaction: { can_use_keyboard: false, }, },);
+
         board.board.dispatchEvent(new browser_window.KeyboardEvent(
             "keydown",
-            { bubbles: true, composed: true, key: "u", },
+            {
+                bubbles: true,
+                composed: true,
+                key: "u",
+            },
         ),);
 
         assert.equal(
@@ -351,28 +501,35 @@ test(
     () => {
         const board = create_board();
         const created = [];
+
         const provider = {
             create_game: (fen,) => {
-                const game = new Chess(fen,); created.push(game,);
+                const game = new Chess(fen,);
+                created.push(game,);
 
                 return game;
             },
         };
+
         board.set_rules_provider(provider,);
         board.move_uci("e2e4",);
         const fen = board.get_position();
+
         assert.throws(
             () => board.set_rules_provider({ create_game: () => ({}), },),
             TypeError,
         );
+
         assert.equal(
             board.get_position(),
             fen,
         );
+
         const replay = new PgnReplay(
             board,
             "1. d4 d5",
         );
+
         replay.load();
         replay.seek(1,);
 
@@ -380,14 +537,17 @@ test(
             created.length,
             3,
         );
+
         assert.equal(
             board.game.get("d4",).type,
             "p",
         );
+
         assert.notEqual(
             created[0],
             created[1],
         );
+
         board.set_rules_provider();
 
         assert.equal(
@@ -404,7 +564,12 @@ for (const [player_color, expected_sound,] of [[null, "checkmate",], ["w", "win"
             const board = create_board();
             const sounds = [];
             board.audio.play = (sound,) => sounds.push(sound,);
-            board.set_options({ is_muted: false, sound: { player_color, }, },);
+
+            board.set_options({
+                is_muted: false,
+                sound: { player_color, },
+            },);
+
             board.set_position("7k/5Q2/6K1/8/8/8/8/8 w - - 0 1",);
             board.move_uci("f7g7",);
 
@@ -412,6 +577,7 @@ for (const [player_color, expected_sound,] of [[null, "checkmate",], ["w", "win"
                 board.get_status().is_checkmate,
                 true,
             );
+
             assert.deepEqual(
                 sounds,
                 [expected_sound,],
@@ -437,6 +603,7 @@ test(
             sounds,
             ["win", "lose",],
         );
+
         assert.throws(
             () => board.play_sound("unknown",),
             TypeError,

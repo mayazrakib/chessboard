@@ -19,6 +19,7 @@ export const LAST_FILE_INDEX = BOARD_SIZE - 1;
 export const PROMOTION_DURATION_MS = 220;
 export const THEMES: BoardTheme[] = ["brown", "sage", "slate", "linen",];
 export const QUALITY_PROFILES: QualityProfile[] = ["full", "balanced", "minimal",];
+
 export const ERROR_OPERATIONS: Record<
     ChessboardErrorDetail["reason"],
     string
@@ -29,6 +30,7 @@ export const ERROR_OPERATIONS: Record<
     render_failed: "Failed to render board content",
     audio_failed: "Failed to play board audio",
 };
+
 export const DEFAULT_OPTIONS: Required<Omit<
     ChessboardOptions,
     "piece_renderer" | "premove_color" | "assets" | keyof CustomizationOptions

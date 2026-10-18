@@ -1,6 +1,7 @@
 import type { Piece, PieceSymbol, } from "chess.js";
 
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
 const PIECE_NAMES: Record<
     PieceSymbol,
     string
@@ -21,29 +22,37 @@ export function create_piece_art(
         SVG_NAMESPACE,
         "svg",
     );
+
     const sprite_reference = document.createElementNS(
         SVG_NAMESPACE,
         "use",
     );
+
     const color = piece.color === "w" ? "white" : "black";
+
     svg.setAttribute(
         "viewBox",
         "0 0 45 45",
     );
+
     svg.setAttribute(
         "focusable",
         "false",
     );
+
     const reference = `${sprite_url}#${color}-${PIECE_NAMES[piece.type]}`;
+
     sprite_reference.setAttribute(
         "href",
         reference,
     );
+
     sprite_reference.setAttributeNS(
         "http://www.w3.org/1999/xlink",
         "xlink:href",
         reference,
     );
+
     svg.append(sprite_reference,);
 
     return svg;
@@ -79,10 +88,12 @@ export function is_point_over_piece(
                 [box.x, box.y + box.height,],
                 [box.x + box.width, box.y + box.height,],
             ] as const;
+
             const horizontal = corners.map(([x, y,],) => matrix.a * x + matrix.c * y + matrix.e,);
             const vertical = corners.map(([x, y,],) => matrix.b * x + matrix.d * y + matrix.f,);
             const left = Math.min(...horizontal,);
             const top = Math.min(...vertical,);
+
             bounds = new DOMRect(
                 left,
                 top,

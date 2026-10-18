@@ -1,4 +1,5 @@
 import type { BoardMark, ChessboardOptions, } from "../api/types.js";
+
 import { QUALITY_PROFILES, THEMES, } from "../element/constants.js";
 import { resolve_assets, } from "../infrastructure/assets.js";
 
@@ -10,6 +11,7 @@ const BOOLEAN_OPTION_NAMES: (keyof ChessboardOptions)[] = [
     "show_last_move",
     "is_muted",
 ];
+
 const ENUM_VALUES_BY_OPTION: Partial<Record<
     keyof ChessboardOptions,
     readonly string[]

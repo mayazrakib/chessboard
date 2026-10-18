@@ -1,6 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, readFileSync, readdirSync, } from "node:fs";
+import { resolve, } from "node:path";
+import { fileURLToPath, } from "node:url";
 
 import ts from "typescript";
 
@@ -10,6 +10,7 @@ const ROOT = process.argv[2]
         "../",
         import.meta.url,
     ));
+
 const failures = [];
 
 function list_sources(directory) {
@@ -41,6 +42,7 @@ for (const directory of ["src", "demo", "electron", "scripts", "test", "benchmar
             path,
             "utf8",
         );
+
         const source = ts.createSourceFile(
             path,
             content,
@@ -73,15 +75,11 @@ for (const directory of ["src", "demo", "electron", "scripts", "test", "benchmar
                     continue;
                 }
 
-                const lines = entries.map(
-                    (entry) => source.getLineAndCharacterOfPosition(entry.getStart(source)).line,
-                );
+                const lines = entries.map((entry) => source.getLineAndCharacterOfPosition(entry.getStart(source)).line,);
 
                 if (new Set(lines).size !== lines.length) {
                     const location = source.getLineAndCharacterOfPosition(node.getStart(source));
-                    failures.push(
-                        `${path}:${location.line + 1}: Multiple arguments or parameters must use vertical formatting.`,
-                    );
+                    failures.push(`${path}:${location.line + 1}: Multiple arguments or parameters must use vertical formatting.`,);
                 }
             }
 

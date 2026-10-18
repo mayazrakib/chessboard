@@ -1,12 +1,7 @@
 import assert from "node:assert/strict";
 import { test, } from "node:test";
 
-import {
-    advance_drag_spring,
-    create_move_keyframes,
-    DRAG_SCALE_THRESHOLD,
-    get_drag_tilt_degrees,
-} from "../../dist/interaction/motion.js";
+import { DRAG_SCALE_THRESHOLD, advance_drag_spring, create_move_keyframes, get_drag_tilt_degrees, } from "../../dist/interaction/motion.js";
 
 test(
     "Motion starts at the release position and ends without a transform offset.",
@@ -21,10 +16,12 @@ test(
             keyframes[0].transform,
             "translate3d(24px, -48px, 0) scale(1.055)",
         );
+
         assert.equal(
             keyframes.at(-1,).transform,
             "translate3d(0px, 0px, 0) scale(1)",
         );
+
         assert.equal(
             keyframes.at(-1,).offset,
             1,
@@ -46,10 +43,12 @@ for (const [scale, frame_count,] of [[1, 3,], [DRAG_SCALE_THRESHOLD, 3,], [DRAG_
                 frames.length,
                 frame_count,
             );
+
             assert.equal(
                 frames[0].transform,
                 `translate3d(-2.5px, 7.25px, 0) scale(${scale})`,
             );
+
             assert.deepEqual(
                 frames.map((frame,) => frame.offset,),
                 frame_count === 4 ? [0, .7, .86, 1,] : [0, .82, 1,],
@@ -106,10 +105,12 @@ test(
             keyframes.length,
             2,
         );
+
         assert.equal(
             keyframes[0].transform,
             keyframes[1].transform,
         );
+
         assert.ok(keyframes.every((frame,) => !frame.transform.includes("NaN",),),);
     },
 );
@@ -141,6 +142,7 @@ test(
                 velocity_px_per_second,
                 index === 0 ? 500 : 16,
             );
+
             offset_px = motion.offset_px;
             velocity_px_per_second = motion.velocity_px_per_second;
         }
@@ -158,23 +160,28 @@ test(
             -48,
             1.055,
         );
+
         const move_frames = create_move_keyframes(
             24,
             -48,
             1,
         );
+
         assert.deepEqual(
             drag_frames.map((frame,) => frame.offset,),
             [0, .7, .86, 1,],
         );
+
         assert.deepEqual(
             move_frames.map((frame,) => frame.offset,),
             [0, .82, 1,],
         );
+
         assert.ok(drag_frames.every((frame,) => !frame.transform.includes(
             ",",
             frame.transform.indexOf("scale",),
         ),),);
+
         assert.equal(
             drag_frames.at(-1,).transform,
             move_frames.at(-1,).transform,
@@ -185,8 +192,10 @@ test(
                 1000,
                 elapsed_ms,
             );
+
             assert.ok(Number.isFinite(tilt_degrees,),);
             assert.ok(Math.abs(tilt_degrees,) <= 7,);
+
             assert.equal(
                 get_drag_tilt_degrees(
                     -1000,

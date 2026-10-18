@@ -9,6 +9,7 @@ const CONTRACTS = [
     {
         name: "Public board options, renderers, events, and tag names compile together.",
         is_valid: true,
+
         source: `import type { ChessboardOptions, PieceRenderer, } from "../../dist/core.js";
 
 const render_piece: PieceRenderer = (
@@ -40,6 +41,7 @@ board.addEventListener(
     {
         name: "Required annotations and optional board marks remain distinct.",
         is_valid: true,
+
         source: `import type { Annotation, BoardMark, MoveInput, } from "../../dist/core.js";
 
 const mark: BoardMark = { from: "a1", };
@@ -51,6 +53,7 @@ export { annotation, move, };
     {
         name: "Grouped customization, sound effects, and rules contracts are exported from the root entry point.",
         is_valid: true,
+
         source: `import {
     STANDARD_RULES_PROVIDER,
     type BoardSound,
@@ -105,6 +108,7 @@ board.set_rules_provider(provider,);
     {
         name: "Event details do not permit fields from unrelated events.",
         is_valid: false,
+
         source: `import "../../dist/core.js";
 
 document.createElement("chess-board",).addEventListener(
@@ -114,7 +118,9 @@ document.createElement("chess-board",).addEventListener(
 `,
     },
 ];
+
 const DIRECTORY = dirname(fileURLToPath(import.meta.url,),);
+
 const SOURCES = new Map(CONTRACTS.map((
     contract,
     index,
@@ -122,6 +128,7 @@ const SOURCES = new Map(CONTRACTS.map((
     DIRECTORY,
     `type_contract_${index}.ts`,
 ), contract.source,],),);
+
 const COMPILER_OPTIONS = {
     module: ts.ModuleKind.NodeNext,
     moduleResolution: ts.ModuleResolutionKind.NodeNext,
@@ -131,16 +138,19 @@ const COMPILER_OPTIONS = {
     target: ts.ScriptTarget.ES2022,
     types: [],
 };
+
 const HOST = ts.createCompilerHost(COMPILER_OPTIONS,);
 const read_file = HOST.readFile.bind(HOST,);
 const has_file = HOST.fileExists.bind(HOST,);
 HOST.readFile = (path,) => SOURCES.get(path,) ?? read_file(path,);
 HOST.fileExists = (path,) => SOURCES.has(path,) || has_file(path,);
+
 const PROGRAM = ts.createProgram(
     [...SOURCES.keys(),],
     COMPILER_OPTIONS,
     HOST,
 );
+
 const DIAGNOSTICS = ts.getPreEmitDiagnostics(PROGRAM,);
 
 test(
@@ -150,6 +160,7 @@ test(
             DIAGNOSTICS.filter((diagnostic,) => !diagnostic.file || !SOURCES.has(diagnostic.file.fileName,),),
             [],
         );
+
         assert.equal(
             DIAGNOSTICS.some((diagnostic,) => [2307, 2688,].includes(diagnostic.code,),),
             false,
@@ -165,6 +176,7 @@ for (const [index, contract,] of CONTRACTS.entries()) {
                 DIRECTORY,
                 `type_contract_${index}.ts`,
             );
+
             const diagnostics = DIAGNOSTICS.filter((diagnostic,) => diagnostic.file?.fileName === path,);
 
             assert.equal(

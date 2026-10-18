@@ -17,6 +17,7 @@ test(
                 import.meta.url,
             ).href,
         );
+
         assert.equal(
             DEFAULT_ASSETS.piece_sprite_url,
             new URL(
@@ -44,12 +45,20 @@ test(
     "Partial configuration inherits earlier values and permits disabling the stylesheet.",
     () => {
         configure_chessboard_assets({ piece_sprite_url: "https://example.org/pieces.svg", },);
-        configure_chessboard_assets({ stylesheet_url: null, piece_sprite_url: undefined, },);
+
+        configure_chessboard_assets({
+            stylesheet_url: null,
+            piece_sprite_url: undefined,
+        },);
 
         assert.deepEqual(
             resolve_assets({},),
-            { stylesheet_url: null, piece_sprite_url: "https://example.org/pieces.svg", },
+            {
+                stylesheet_url: null,
+                piece_sprite_url: "https://example.org/pieces.svg",
+            },
         );
+
         assert.equal(
             resolve_assets({ stylesheet_url: "./local.css", },).stylesheet_url,
             "./local.css",
@@ -64,8 +73,12 @@ for (const key of ["stylesheet_url", "piece_sprite_url",]) {
             () => {
                 assert.throws(
                     () => configure_chessboard_assets({ [key]: invalid_url, },),
-                    { name: "TypeError", message: `Failed to configure assets: ${key} must be a nonempty URL.`, },
+                    {
+                        name: "TypeError",
+                        message: `Failed to configure assets: ${key} must be a nonempty URL.`,
+                    },
                 );
+
                 assert.deepEqual(
                     resolve_assets({},),
                     DEFAULT_ASSETS,
@@ -79,9 +92,13 @@ test(
     "A rejected sprite URL cannot partially commit a stylesheet change.",
     () => {
         assert.throws(
-            () => configure_chessboard_assets({ stylesheet_url: "/changed.css", piece_sprite_url: null, },),
+            () => configure_chessboard_assets({
+                stylesheet_url: "/changed.css",
+                piece_sprite_url: null,
+            },),
             TypeError,
         );
+
         assert.deepEqual(
             resolve_assets({},),
             DEFAULT_ASSETS,

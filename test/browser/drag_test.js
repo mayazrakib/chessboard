@@ -10,6 +10,7 @@ async function prepare_board(
 ) {
     await page.goto(page_path,);
     await page.locator(".board.ready",).waitFor();
+
     await page.evaluate(
         (configuration,) => {
             const board = document.querySelector("chess-board",);
@@ -22,6 +23,7 @@ async function prepare_board(
             ...options,
         },
     );
+
     await page.waitForFunction(() => {
         const artwork = document.querySelector("chess-board",).shadowRoot.querySelector(".piece svg",);
 
@@ -51,6 +53,7 @@ async function get_square_point(
                 Math.round(point.x,),
             ),
         );
+
         point.y = Math.max(
             Math.ceil(bounds.y,),
             Math.min(
@@ -84,6 +87,7 @@ async function start_drag(
             square,
         ),
     );
+
     await page.mouse.down();
 }
 
@@ -93,9 +97,11 @@ async function pause_motion_frames(page,) {
 
         return artwork?.style.transform === "";
     },);
+
     await page.evaluate(() => {
         const pending_frames = new Map();
         let next_frame_id = 0;
+
         window.requestAnimationFrame = (callback,) => {
             pending_frames.set(
                 ++next_frame_id,
@@ -104,6 +110,7 @@ async function pause_motion_frames(page,) {
 
             return next_frame_id;
         };
+
         window.cancelAnimationFrame = (frame_id,) => pending_frames.delete(frame_id,);
     },);
 }
@@ -130,18 +137,22 @@ test(
             page,
             { orientation: "white", },
         );
+
         await start_drag(
             page,
             "e2",
         );
+
         const destination = await get_square_point(
             page,
             "e4",
         );
+
         await move_pointer(
             page,
             destination,
         );
+
         await page.evaluate(() => new Promise(requestAnimationFrame,),);
 
         const moving_observation = await page.evaluate(() => {
@@ -154,19 +165,23 @@ test(
                 target: target?.dataset.square ?? null,
             };
         },);
+
         expect(moving_observation.target,).toBe("e4",);
         expect(moving_observation.ghost_center_y,).toBeGreaterThan(destination.y + 1,);
 
         await page.waitForTimeout(500,);
+
         const resting_center_y = await page.locator(".drag_ghost",).evaluate((ghost,) => {
             const bounds = ghost.getBoundingClientRect();
 
             return bounds.y + bounds.height / 2;
         },);
+
         expect(resting_center_y,).toBeCloseTo(
             destination.y,
             0,
         );
+
         await page.mouse.up();
     },
 );
@@ -195,6 +210,7 @@ for (const orientation of ["white", "black",]) {
                                     page,
                                     "e2",
                                 );
+
                                 await move_pointer(
                                     page,
                                     await get_square_point(
@@ -204,7 +220,9 @@ for (const orientation of ["white", "black",]) {
                                         fraction_y,
                                     ),
                                 );
+
                                 await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                                 expect(await get_highlight(page,),).toEqual({
                                     square: "e4",
                                     opacity: "1",
@@ -228,7 +246,9 @@ for (const orientation of ["white", "black",]) {
                                 page.context().browser()?.browserType().name() !== "chromium",
                                 "This release-ordering test requires the Chromium DevTools Protocol.",
                             );
+
                             const session = await page.context().newCDPSession(page,);
+
                             await page.evaluate(() => {
                                 const board = document.querySelector("chess-board",);
                                 window.release_events = [];
@@ -252,21 +272,26 @@ for (const orientation of ["white", "black",]) {
                                         page,
                                         "e2",
                                     );
+
                                     const destination = await get_square_point(
                                         page,
                                         "e4",
                                         fraction_x,
                                         fraction_y,
                                     );
+
                                     await move_pointer(
                                         page,
                                         destination,
                                     );
+
                                     await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                                     expect(await get_highlight(page,),).toEqual({
                                         square: "e4",
                                         opacity: "1",
                                     },);
+
                                     await move_pointer(
                                         page,
                                         await get_square_point(
@@ -274,6 +299,7 @@ for (const orientation of ["white", "black",]) {
                                             previous_square,
                                         ),
                                     );
+
                                     await session.send(
                                         "Input.dispatchMouseEvent",
                                         {
@@ -288,6 +314,7 @@ for (const orientation of ["white", "black",]) {
                                     const events = await page.evaluate(() => window.release_events.slice(-2,),);
                                     expect(events.map((event,) => event.name,),).toEqual(["pointermove", "pointerup",],);
                                     expect(events.every((event,) => event.is_trusted,),).toBe(true,);
+
                                     expect({
                                         x: events[0].x,
                                         y: events[0].y,
@@ -295,10 +322,12 @@ for (const orientation of ["white", "black",]) {
                                         x: events[1].x,
                                         y: events[1].y,
                                     },);
+
                                     expect(await get_moves(page,),).toEqual(["e2e4",],);
                                     await expect(page.locator('[data-square="e4"] .piece',),).toHaveCount(1,);
                                     await expect(page.locator(".piece",),).toHaveCount(32,);
                                     await expect(page.locator(".drag_ghost",),).toHaveCount(0,);
+
                                     await page.evaluate(async () => {
                                         const board = document.querySelector("chess-board",);
                                         board.undo();
@@ -317,11 +346,14 @@ for (const orientation of ["white", "black",]) {
                             page.context().browser()?.browserType().name() !== "chromium",
                             "This release-ordering test requires the Chromium DevTools Protocol.",
                         );
+
                         const session = await page.context().newCDPSession(page,);
+
                         await start_drag(
                             page,
                             "e2",
                         );
+
                         await move_pointer(
                             page,
                             await get_square_point(
@@ -329,12 +361,16 @@ for (const orientation of ["white", "black",]) {
                                 "e4",
                             ),
                         );
+
                         await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                         expect(await get_highlight(page,),).toEqual({
                             square: "e4",
                             opacity: "1",
                         },);
+
                         const bounds = await page.locator(".board",).boundingBox();
+
                         await session.send(
                             "Input.dispatchMouseEvent",
                             {
@@ -361,21 +397,26 @@ for (const orientation of ["white", "black",]) {
                             page,
                             "e2",
                         );
+
                         const target = await get_square_point(
                             page,
                             "e4",
                             .0001,
                             .5,
                         );
+
                         await move_pointer(
                             page,
                             target,
                         );
+
                         await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                         expect(await get_highlight(page,),).toEqual({
                             square: "e4",
                             opacity: "1",
                         },);
+
                         await pause_motion_frames(page,);
 
                         await move_pointer(
@@ -385,6 +426,7 @@ for (const orientation of ["white", "black",]) {
                                 y: target.y,
                             },
                         );
+
                         const release_highlight = await get_highlight(page,);
                         await page.mouse.up();
                         expect(await get_moves(page,),).toEqual([],);
@@ -400,6 +442,7 @@ for (const orientation of ["white", "black",]) {
                             page,
                             "e2",
                         );
+
                         await move_pointer(
                             page,
                             await get_square_point(
@@ -407,6 +450,7 @@ for (const orientation of ["white", "black",]) {
                                 "e3",
                             ),
                         );
+
                         await page.evaluate(() => new Promise(requestAnimationFrame,),);
                         await pause_motion_frames(page,);
 
@@ -420,6 +464,7 @@ for (const orientation of ["white", "black",]) {
                                     .0001,
                                 ),
                             );
+
                             expect(await get_highlight(page,),).toEqual(square === "d4" ? null : {
                                 square,
                                 opacity: "1",
@@ -445,7 +490,9 @@ for (const orientation of ["white", "black",]) {
                                 height: matrix.d * bounds.height,
                             };
                         },);
+
                         expect(artwork.height,).toBeGreaterThan(0,);
+
                         const destination = await get_square_point(
                             page,
                             "e4",
@@ -461,16 +508,21 @@ for (const orientation of ["white", "black",]) {
                                     y: artwork.top + artwork.height / 2,
                                 },
                             );
+
                             await page.mouse.down();
+
                             await move_pointer(
                                 page,
                                 destination,
                             );
+
                             await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                             expect(await get_highlight(page,),).toEqual(padding_px === 3 ? {
                                 square: "e4",
                                 opacity: "1",
                             } : null,);
+
                             await page.mouse.up();
                             expect(await get_moves(page,),).toEqual(padding_px === 3 ? ["e2e4",] : [],);
                         }
@@ -488,10 +540,12 @@ for (const orientation of ["white", "black",]) {
                 { orientation, },
                 "/",
             );
+
             test.skip(
                 page.context().browser()?.browserType().name() !== "chromium",
                 "This release-ordering test requires the Chromium DevTools Protocol.",
             );
+
             const session = await page.context().newCDPSession(page,);
 
             for (const fraction_x of EDGE_FRACTIONS) {
@@ -500,6 +554,7 @@ for (const orientation of ["white", "black",]) {
                         page,
                         "e2",
                     );
+
                     await move_pointer(
                         page,
                         await get_square_point(
@@ -507,12 +562,14 @@ for (const orientation of ["white", "black",]) {
                             "d4",
                         ),
                     );
+
                     const destination = await get_square_point(
                         page,
                         "e4",
                         fraction_x,
                         fraction_y,
                     );
+
                     await session.send(
                         "Input.dispatchMouseEvent",
                         {
@@ -527,6 +584,7 @@ for (const orientation of ["white", "black",]) {
                     expect(await get_moves(page,),).toEqual(["e2e4",],);
                     await expect(page.locator("#feedback",),).toHaveText("e4 played.",);
                     await expect(page.locator('[data-square="e4"] .piece',),).toHaveCount(1,);
+
                     await page.evaluate(async () => {
                         const board = document.querySelector("chess-board",);
                         board.undo();
@@ -545,9 +603,11 @@ for (const orientation of ["white", "black",]) {
                     page,
                     { orientation, },
                 );
+
                 await page.evaluate(() => {
                     const board = document.querySelector("chess-board",);
                     const piece = board.shadowRoot.querySelector('[data-square="e2"] .piece',);
+
                     board.addEventListener(
                         "pointerup",
                         () => {
@@ -558,10 +618,12 @@ for (const orientation of ["white", "black",]) {
                         },
                     );
                 },);
+
                 await start_drag(
                     page,
                     "e2",
                 );
+
                 await move_pointer(
                     page,
                     await get_square_point(
@@ -571,7 +633,9 @@ for (const orientation of ["white", "black",]) {
                         .8,
                     ),
                 );
+
                 await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                 const scale = await page.locator(".drag_ghost",).evaluate((piece,) => {
                     const transform = new DOMMatrix(getComputedStyle(piece,).transform,);
 
@@ -580,6 +644,7 @@ for (const orientation of ["white", "black",]) {
                         transform.b,
                     );
                 },);
+
                 expect(scale,).toBeGreaterThan(1,);
 
                 await page.mouse.up();
@@ -587,11 +652,13 @@ for (const orientation of ["white", "black",]) {
                 expect(motion,).toHaveLength(1,);
                 expect(motion[0].duration_ms,).toBe(220,);
                 expect(motion[0].frames[0],).not.toBe(motion[0].frames.at(-1,),);
+
                 await page.evaluate(async () => {
                     const shadow = document.querySelector("chess-board",).shadowRoot;
                     const animations = [...shadow.querySelectorAll(".piece",),].flatMap((piece,) => piece.getAnimations(),);
                     await Promise.all(animations.map((animation,) => animation.finished,),);
                 },);
+
                 await expect(page.locator(".drag_ghost, .moving",),).toHaveCount(0,);
                 await expect(page.locator(`[data-square="${is_legal ? "e4" : "e2"}"] .piece`,),).toHaveCount(1,);
                 await expect(page.locator(".piece",),).toHaveCount(32,);
@@ -606,6 +673,7 @@ test.describe(
     () => {
         test.use({
             deviceScaleFactor: 2,
+
             viewport: {
                 width: 570,
                 height: 788,
@@ -621,11 +689,14 @@ test.describe(
                         { orientation, },
                         "/",
                     );
+
                     test.skip(
                         page.context().browser()?.browserType().name() !== "chromium",
                         "This release-ordering test requires the Chromium DevTools Protocol.",
                     );
+
                     const session = await page.context().newCDPSession(page,);
+
                     await page.evaluate(() => {
                         const board = document.querySelector("chess-board",);
                         window.capture_events = [];
@@ -648,24 +719,30 @@ test.describe(
                                 page,
                                 "e2",
                             );
+
                             const destination = await get_square_point(
                                 page,
                                 "e4",
                                 fraction_x,
                                 fraction_y,
                             );
+
                             await move_pointer(
                                 page,
                                 destination,
                             );
+
                             await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                             expect(await get_highlight(page,),).toEqual({
                                 square: "e4",
                                 opacity: "1",
                             },);
+
                             await page.evaluate(() => {
                                 window.capture_events = [];
                             },);
+
                             await session.send(
                                 "Input.dispatchMouseEvent",
                                 {
@@ -675,15 +752,19 @@ test.describe(
                                     buttons: 0,
                                 },
                             );
+
                             const events = await page.evaluate(() => window.capture_events,);
                             expect(events.map((event,) => event.name,),).toEqual(["lostpointercapture", "pointermove",],);
                             expect(events.every((event,) => event.is_trusted && event.buttons === 0,),).toBe(true,);
+
                             expect(await get_highlight(page,),).toEqual({
                                 square: "e4",
                                 opacity: "1",
                             },);
+
                             expect(await get_moves(page,),).toEqual([],);
                             await page.evaluate(() => new Promise(requestAnimationFrame,),);
+
                             await session.send(
                                 "Input.dispatchMouseEvent",
                                 {
@@ -693,6 +774,7 @@ test.describe(
                                     buttons: 0,
                                 },
                             );
+
                             await session.send(
                                 "Input.dispatchMouseEvent",
                                 {
@@ -708,6 +790,7 @@ test.describe(
                             expect(await page.evaluate(() => window.capture_events.filter((event,) => event.name === "chessboard:move",),),).toHaveLength(1,);
                             await expect(page.locator('[data-square="e4"] .piece',),).toHaveCount(1,);
                             await expect(page.locator(".drag_ghost",),).toHaveCount(0,);
+
                             await page.evaluate(async () => {
                                 const board = document.querySelector("chess-board",);
                                 board.undo();
@@ -726,23 +809,29 @@ test.describe(
                         { orientation, },
                         "/",
                     );
+
                     test.skip(
                         page.context().browser()?.browserType().name() !== "chromium",
                         "This release-ordering test requires the Chromium DevTools Protocol.",
                     );
+
                     const session = await page.context().newCDPSession(page,);
+
                     await start_drag(
                         page,
                         "e2",
                     );
+
                     const destination = await get_square_point(
                         page,
                         "e4",
                     );
+
                     await move_pointer(
                         page,
                         destination,
                     );
+
                     await session.send(
                         "Input.dispatchMouseEvent",
                         {
@@ -752,14 +841,17 @@ test.describe(
                             buttons: 0,
                         },
                     );
+
                     expect(await get_highlight(page,),).toEqual({
                         square: "e4",
                         opacity: "1",
                     },);
+
                     const outside = {
                         x: 2,
                         y: destination.y,
                     };
+
                     await session.send(
                         "Input.dispatchMouseEvent",
                         {
@@ -769,7 +861,9 @@ test.describe(
                             buttons: 0,
                         },
                     );
+
                     expect(await get_highlight(page,),).toBeNull();
+
                     await session.send(
                         "Input.dispatchMouseEvent",
                         {
@@ -780,6 +874,7 @@ test.describe(
                             clickCount: 1,
                         },
                     );
+
                     expect(await get_moves(page,),).toEqual([],);
                     await expect(page.locator(".drag_ghost",),).toHaveCount(0,);
                     await expect(page.locator('[data-square="e2"] .piece',),).toHaveCount(1,);
@@ -788,10 +883,12 @@ test.describe(
                         page,
                         "e2",
                     );
+
                     await move_pointer(
                         page,
                         destination,
                     );
+
                     await page.mouse.up();
                     expect(await get_moves(page,),).toEqual(["e2e4",],);
                 },
@@ -806,23 +903,29 @@ test.describe(
                             { orientation, },
                             "/",
                         );
+
                         test.skip(
                             page.context().browser()?.browserType().name() !== "chromium",
                             "This release-ordering test requires the Chromium DevTools Protocol.",
                         );
+
                         const session = await page.context().newCDPSession(page,);
+
                         await start_drag(
                             page,
                             "e2",
                         );
+
                         const destination = await get_square_point(
                             page,
                             "e4",
                         );
+
                         await move_pointer(
                             page,
                             destination,
                         );
+
                         await session.send(
                             "Input.dispatchMouseEvent",
                             {
@@ -832,10 +935,12 @@ test.describe(
                                 buttons: 0,
                             },
                         );
+
                         expect(await get_highlight(page,),).toEqual({
                             square: "e4",
                             opacity: "1",
                         },);
+
                         await page.evaluate(
                             (reason,) => {
                                 const board = document.querySelector("chess-board",);
@@ -863,9 +968,11 @@ test.describe(
                             },
                             interruption,
                         );
+
                         expect(await get_moves(page,),).toEqual([],);
                         await expect(page.locator(".drag_ghost",),).toHaveCount(0,);
                         await expect(page.locator('[data-square="e2"] .piece',),).toHaveCount(1,);
+
                         await session.send(
                             "Input.dispatchMouseEvent",
                             {
@@ -876,6 +983,7 @@ test.describe(
                                 clickCount: 1,
                             },
                         );
+
                         expect(await get_moves(page,),).toEqual([],);
                     },
                 );

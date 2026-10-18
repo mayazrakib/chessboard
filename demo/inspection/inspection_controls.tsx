@@ -188,13 +188,11 @@ export function AttributeControls() {
             <Label className="grid gap-2">
                 Attribute
                 <NativeSelect id="test_attribute">
-                    {["orientation", "theme", "readonly", "coordinates", "fen",].map(
-                        (name,) => (
-                            <NativeSelectOption key={name} value={name}>
-                                {name}
-                            </NativeSelectOption>
-                        ),
-                    )}
+                    {["orientation", "theme", "readonly", "coordinates", "fen",].map((name,) => (
+                        <NativeSelectOption key={name} value={name}>
+                            {name}
+                        </NativeSelectOption>
+                    ),)}
                 </NativeSelect>
             </Label>
             <Label className="grid gap-2">

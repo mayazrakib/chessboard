@@ -6,15 +6,33 @@ async function prepare_marks(
 ) {
     await page.goto("/test/browser/drag.html",);
     await page.locator(".board.ready",).waitFor();
+
     await page.evaluate(
         (orientation,) => {
             const board = document.querySelector("chess-board",);
             board.set_options({ orientation, },);
+
             board.set_marks([
-                { from: "e2", color: "green", },
-                { from: "e4", color: "blue", source: "engine", },
-                { from: "e2", to: "e4", color: "blue", source: "engine", },
-                { from: "d4", to: "f4", color: "red", },
+                {
+                    from: "e2",
+                    color: "green",
+                },
+                {
+                    from: "e4",
+                    color: "blue",
+                    source: "engine",
+                },
+                {
+                    from: "e2",
+                    to: "e4",
+                    color: "blue",
+                    source: "engine",
+                },
+                {
+                    from: "d4",
+                    to: "f4",
+                    color: "red",
+                },
             ],);
         },
         orientation,
@@ -63,7 +81,11 @@ async function expect_marks_above_piece(
         },
         selector,
     );
-    expect(layers,).toEqual({ is_mark_above: true, has_piece_below: true, },);
+
+    expect(layers,).toEqual({
+        is_mark_above: true,
+        has_piece_below: true,
+    },);
 }
 
 for (const orientation of ["white", "black",]) {
@@ -74,10 +96,12 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
+
             await expect_marks_above_piece(
                 page,
                 '[data-square="e2"] .piece',
             );
+
             await page.evaluate(() => {
                 const board = document.querySelector("chess-board",);
                 board.move_uci("e2e4",);
@@ -85,7 +109,9 @@ for (const orientation of ["white", "black",]) {
                 animation.pause();
                 animation.currentTime = animation.effect.getTiming().duration / 2;
             },);
+
             await expect(page.locator('[data-square="e4"] .piece',),).toHaveClass(/moving/,);
+
             await expect_marks_above_piece(
                 page,
                 '[data-square="e4"] .piece',
@@ -100,38 +126,55 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
+
             const source = await get_square_center(
                 page,
                 "e2",
             );
+
             const target = await get_square_center(
                 page,
                 "e4",
             );
+
             await page.mouse.move(
                 source.x,
                 source.y,
             );
+
             await page.mouse.down();
+
             await page.evaluate(() => {
-                document.querySelector("chess-board",).set_marks([{ from: "e4", source: "engine", },],);
+                document.querySelector("chess-board",).set_marks([{
+                    from: "e4",
+                    source: "engine",
+                },],);
             },);
+
             await page.mouse.move(
                 target.x,
                 target.y,
             );
+
             await expect(page.locator('[data-square="e4"]',),).toHaveClass(/drag_target/,);
+
             await expect_marks_above_piece(
                 page,
                 ".drag_ghost",
             );
+
             await page.mouse.up();
             expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual(["e2e4",],);
 
             await page.evaluate(() => {
                 const board = document.querySelector("chess-board",);
                 board.set_position("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",);
-                board.set_marks([{ from: "e5", color: "amber", },],);
+
+                board.set_marks([{
+                    from: "e5",
+                    color: "amber",
+                },],);
+
                 board.addEventListener(
                     "pointerup",
                     () => {
@@ -142,27 +185,38 @@ for (const orientation of ["white", "black",]) {
                     { once: true, },
                 );
             },);
+
             const invalid_target = await get_square_center(
                 page,
                 "e5",
             );
+
             await page.mouse.move(
                 source.x,
                 source.y,
             );
+
             await page.mouse.down();
+
             await page.evaluate(() => {
-                document.querySelector("chess-board",).set_marks([{ from: "e5", color: "amber", },],);
+                document.querySelector("chess-board",).set_marks([{
+                    from: "e5",
+                    color: "amber",
+                },],);
             },);
+
             await page.mouse.move(
                 invalid_target.x,
                 invalid_target.y,
             );
+
             await page.mouse.up();
+
             await expect_marks_above_piece(
                 page,
                 ".drag_ghost",
             );
+
             expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual([],);
         },
     );
@@ -174,6 +228,7 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
+
             await page.evaluate(() => {
                 const board = document.querySelector("chess-board",);
                 board.set_position("4k3/8/8/8/4p3/8/4R3/4K3 w - - 0 1",);
@@ -184,6 +239,7 @@ for (const orientation of ["white", "black",]) {
                     animation.currentTime = 0;
                 }
             },);
+
             await expect_marks_above_piece(
                 page,
                 '[data-square="e4"] .piece',
@@ -200,14 +256,18 @@ for (const square of ["d4", "e2",]) {
                 page,
                 "white",
             );
+
             await page.evaluate(() => {
                 window.annotation_changes = [];
+
                 document.querySelector("chess-board",).addEventListener(
                     "chessboard:annotations",
                     (event,) => window.annotation_changes.push(event.detail,),
                 );
             },);
+
             await page.locator(`[data-square="${square}"]`,).click();
+
             const cleared = await page.evaluate(() => {
                 const board = document.querySelector("chess-board",);
 
@@ -218,7 +278,14 @@ for (const square of ["d4", "e2",]) {
                     source: window.annotation_changes[0].source,
                 };
             },);
-            expect(cleared,).toEqual({ marks: [], annotations: [], change_count: 1, source: "pointer", },);
+
+            expect(cleared,).toEqual({
+                marks: [],
+                annotations: [],
+                change_count: 1,
+                source: "pointer",
+            },);
+
             await expect(page.locator(".shapes > g",),).toHaveCount(0,);
 
             if (square !== "e2") {
@@ -239,6 +306,7 @@ test(
             page,
             "white",
         );
+
         await page.locator('[data-square="a4"]',).click({ button: "right", },);
         expect(await page.evaluate(() => document.querySelector("chess-board",).get_marks().length,),).toBe(5,);
         await page.evaluate(() => document.querySelector("chess-board",).set_options({ interactive: false, },),);
@@ -254,7 +322,9 @@ test(
             page,
             "white",
         );
+
         await page.locator('[data-square="a4"]',).click({ modifiers: ["Control",], },);
+
         const state = await page.evaluate(() => {
             const board = document.querySelector("chess-board",);
 
@@ -263,6 +333,7 @@ test(
                 moves: board.get_uci_moves(),
             };
         },);
+
         expect(state.marks,).toHaveLength(5,);
         expect(state.marks.at(-1,),).toMatchObject({ from: "a4", },);
         expect(state.moves,).toEqual([],);
@@ -277,31 +348,44 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
+
             await page.evaluate(() => document.querySelector("chess-board",).clear_marks(),);
+
             const origin = await get_square_center(
                 page,
                 "d4",
             );
+
             const target = await get_square_center(
                 page,
                 "f4",
             );
+
             await page.keyboard.down("Control",);
+
             await page.mouse.move(
                 origin.x,
                 origin.y,
             );
+
             await page.mouse.down();
+
             await page.mouse.move(
                 target.x,
                 target.y,
                 { steps: 4, },
             );
+
             await page.mouse.up();
             await page.keyboard.up("Control",);
+
             expect(await page.evaluate(() => document.querySelector("chess-board",).get_marks(),),).toEqual([
-                { from: "d4", to: "f4", },
+                {
+                    from: "d4",
+                    to: "f4",
+                },
             ],);
+
             expect(await page.evaluate(() => document.querySelector("chess-board",).get_uci_moves(),),).toEqual([],);
         },
     );
@@ -315,7 +399,9 @@ for (const orientation of ["white", "black",]) {
                 page,
                 orientation,
             );
+
             await page.evaluate(() => document.querySelector("chess-board",).clear_marks(),);
+
             const origin = await get_square_center(
                 page,
                 "d4",
@@ -326,76 +412,108 @@ for (const orientation of ["white", "black",]) {
                     page,
                     destination,
                 );
+
                 await page.mouse.move(
                     origin.x,
                     origin.y,
                 );
+
                 await page.mouse.down({ button: "right", },);
+
                 await page.mouse.move(
                     target.x,
                     target.y,
                     { steps: 4, },
                 );
+
                 await page.mouse.up({ button: "right", },);
                 const arrow = page.locator(".arrow_mark path",);
                 await expect(arrow,).toHaveCount(1,);
+
                 const geometry = await arrow.evaluate((path,) => {
                     const transform = path.getScreenCTM();
+
                     const origin = new DOMPoint(
                         0,
                         0,
                     ).matrixTransform(transform,);
+
                     const bend = new DOMPoint(
                         2,
                         0,
                     ).matrixTransform(transform,);
+
                     const tip = new DOMPoint(
                         2,
                         1,
                     ).matrixTransform(transform,);
 
                     return {
-                        origin: { x: origin.x, y: origin.y, },
-                        bend: { x: bend.x, y: bend.y, },
-                        tip: { x: tip.x, y: tip.y, },
+                        origin: {
+                            x: origin.x,
+                            y: origin.y,
+                        },
+
+                        bend: {
+                            x: bend.x,
+                            y: bend.y,
+                        },
+
+                        tip: {
+                            x: tip.x,
+                            y: tip.y,
+                        },
+
                         path: path.getAttribute("d",),
                     };
                 },);
+
                 expect(geometry.path,).toContain("L 2 1",);
+
                 expect(geometry.origin.x,).toBeCloseTo(
                     origin.x,
                     1,
                 );
+
                 expect(geometry.origin.y,).toBeCloseTo(
                     origin.y,
                     1,
                 );
+
                 expect(geometry.tip.x,).toBeCloseTo(
                     target.x,
                     1,
                 );
+
                 expect(geometry.tip.y,).toBeCloseTo(
                     target.y,
                     1,
                 );
+
                 const is_horizontal_first = Math.abs(target.x - origin.x) > Math.abs(target.y - origin.y);
+
                 expect(geometry.bend.x,).toBeCloseTo(
                     is_horizontal_first ? target.x : origin.x,
                     1,
                 );
+
                 expect(geometry.bend.y,).toBeCloseTo(
                     is_horizontal_first ? origin.y : target.y,
                     1,
                 );
+
                 await page.mouse.move(
                     origin.x,
                     origin.y,
                 );
+
                 await page.mouse.down({ button: "right", },);
+
                 await page.mouse.move(
                     target.x,
                     target.y,
                 );
+
                 await page.mouse.up({ button: "right", },);
                 await expect(arrow,).toHaveCount(0,);
             }

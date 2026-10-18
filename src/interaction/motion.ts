@@ -22,10 +22,12 @@ export function advance_drag_spring(
         ),
         MAXIMUM_SPRING_FRAME_MS,
     ) / 1000;
+
     const acceleration_px_per_second_squared = (
         -DRAG_SPRING_STIFFNESS * offset_px
         - DRAG_SPRING_DAMPING * velocity_px_per_second
     );
+
     const next_velocity_px_per_second = velocity_px_per_second
         + acceleration_px_per_second_squared * elapsed_seconds;
 

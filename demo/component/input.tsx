@@ -1,6 +1,6 @@
-import type { ComponentProps, } from "react"
 import { Input, } from "@base-ui/react/input"
 import { cn, } from "cn"
+import type { ComponentProps, } from "react"
 
 function ChessboardInput({ className, type, ...props }: ComponentProps<"input">,) {
     return (

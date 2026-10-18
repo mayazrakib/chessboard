@@ -19,37 +19,48 @@ const START_POSITION = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 function create_drag_board(options = {},) {
     const board = document.createElement("chess-board",);
     document.body.append(board,);
+
     board.set_options({
         animation_duration: 0,
         orientation: options.orientation ?? "white",
     },);
+
     board.set_position(options.fen ?? START_POSITION,);
     const grid = board.shadowRoot.querySelector(".board",);
+
     let bounds = new window.DOMRect(
         30,
         50,
         options.width ?? 537.5,
         options.width ?? 537.5,
     );
+
     let captured_pointer = null;
+
     grid.setPointerCapture = (pointer_id,) => {
         captured_pointer = pointer_id;
     };
+
     grid.hasPointerCapture = (pointer_id,) => captured_pointer === pointer_id;
+
     grid.releasePointerCapture = () => {
         captured_pointer = null;
     };
+
     grid.getBoundingClientRect = () => bounds;
+
     Object.defineProperty(
         grid,
         "clientWidth",
         { get: () => 800, },
     );
+
     Object.defineProperty(
         grid,
         "clientHeight",
         { get: () => 800, },
     );
+
     const get_point = (
         square,
         fraction = .5,
@@ -78,6 +89,7 @@ function create_drag_board(options = {},) {
                 bounds.height / 8,
             );
         };
+
         square.getBoundingClientRect = get_rect;
         const piece = square.querySelector(".piece",);
 
@@ -105,6 +117,7 @@ function create_drag_board(options = {},) {
         }
 
         const target = type === "pointerdown" ? board.shadowRoot.querySelector(`[data-square="${square}"]`,) : grid;
+
         target.dispatchEvent(new window.PointerEvent(
             type,
             {
@@ -119,6 +132,7 @@ function create_drag_board(options = {},) {
             },
         ),);
     };
+
     const move_bounds = () => {
         bounds = new window.DOMRect(
             100,
@@ -142,24 +156,29 @@ for (const orientation of ["white", "black",]) {
             `Accepts a fast ${pointer_type} release without an intervening move in ${orientation} orientation.`,
             () => {
                 const { board, dispatch, } = create_drag_board({ orientation, },);
+
                 dispatch(
                     "pointerdown",
                     "e2",
                     { pointer_type, },
                 );
+
                 dispatch(
                     "pointerup",
                     "e4",
                     { pointer_type, },
                 );
+
                 assert.deepEqual(
                     board.get_uci_moves(),
                     ["e2e4",],
                 );
+
                 assert.equal(
                     board.shadowRoot.querySelectorAll(".piece",).length,
                     32,
                 );
+
                 board.remove();
             },
         );
@@ -201,29 +220,35 @@ for (const scenario of [
                         fen: scenario.fen,
                         orientation,
                     },);
+
                     dispatch(
                         "pointerdown",
                         scenario.from,
                         { fraction, },
                     );
+
                     dispatch(
                         "pointermove",
                         scenario.to,
                         { fraction, },
                     );
+
                     dispatch(
                         "pointerup",
                         scenario.to,
                         { fraction, },
                     );
+
                     assert.equal(
                         board.get_uci_moves().at(-1,),
                         scenario.from + scenario.to,
                     );
+
                     assert.equal(
                         board.shadowRoot.querySelectorAll(".drag_ghost",).length,
                         0,
                     );
+
                     board.remove();
                 }
             }
@@ -235,27 +260,34 @@ test(
     "Uses the latest pointer movement after layout movement and a different previous target.",
     () => {
         const { board, dispatch, move_bounds, } = create_drag_board();
+
         dispatch(
             "pointerdown",
             "e2",
         );
+
         dispatch(
             "pointermove",
             "d4",
         );
+
         move_bounds();
+
         dispatch(
             "pointermove",
             "e4",
         );
+
         dispatch(
             "pointerup",
             "e4",
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["e2e4",],
         );
+
         board.remove();
     },
 );
@@ -264,40 +296,50 @@ test(
     "Rejects illegal drops and ignores another pointer without losing the active drag.",
     () => {
         const { board, dispatch, } = create_drag_board();
+
         dispatch(
             "pointerdown",
             "e2",
         );
+
         dispatch(
             "pointermove",
             "e4",
         );
+
         dispatch(
             "pointerup",
             "e4",
             { pointer_id: 2, },
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             [],
         );
+
         dispatch(
             "pointermove",
             "e5",
         );
+
         dispatch(
             "pointerup",
             "e5",
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             [],
         );
+
         assert.ok(board.shadowRoot.querySelector('[data-square="e2"] .piece',),);
+
         assert.equal(
             board.shadowRoot.querySelectorAll(".piece",).length,
             32,
         );
+
         board.remove();
     },
 );
@@ -306,27 +348,34 @@ test(
     "Keeps promotion pending until a piece is chosen after dragging.",
     () => {
         const { board, dispatch, } = create_drag_board({ fen: "7k/P7/8/8/8/8/8/7K w - - 0 1", },);
+
         dispatch(
             "pointerdown",
             "a7",
         );
+
         dispatch(
             "pointermove",
             "a8",
         );
+
         dispatch(
             "pointerup",
             "a8",
         );
+
         assert.equal(
             board.shadowRoot.querySelectorAll(".promotion_choice",).length,
             4,
         );
+
         board.shadowRoot.querySelector(".promotion_choice",).click();
+
         assert.equal(
             board.get_uci_moves().length,
             1,
         );
+
         board.remove();
     },
 );
@@ -340,11 +389,13 @@ test(
             for (const fraction of [.0001, .5, .9999,]) {
                 for (const fraction_y of [.0001, .5, .9999,]) {
                     const { board, dispatch, } = create_drag_board({ orientation, },);
+
                     dispatch(
                         "pointerdown",
                         "e2",
                         { fraction: .05, },
                     );
+
                     dispatch(
                         "pointermove",
                         "e4",
@@ -353,11 +404,14 @@ test(
                             fraction_y,
                         },
                     );
+
                     await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
                     assert.equal(
                         board.shadowRoot.querySelector(".drag_target",)?.dataset.square,
                         "e4",
                     );
+
                     dispatch(
                         "pointerup",
                         "e4",
@@ -366,10 +420,12 @@ test(
                             fraction_y,
                         },
                     );
+
                     assert.deepEqual(
                         board.get_uci_moves(),
                         ["e2e4",],
                     );
+
                     board.remove();
                 }
             }
@@ -381,33 +437,41 @@ test(
     "Flushes the latest hover target when the next animation frame has not rendered.",
     async () => {
         const { board, dispatch, } = create_drag_board();
+
         dispatch(
             "pointerdown",
             "e2",
         );
+
         dispatch(
             "pointermove",
             "e3",
         );
+
         await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
         assert.equal(
             board.shadowRoot.querySelector(".drag_target",)?.dataset.square,
             "e3",
         );
+
         dispatch(
             "pointermove",
             "e4",
             { fraction: .001, },
         );
+
         dispatch(
             "pointerup",
             "e4",
             { fraction: .001, },
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["e2e4",],
         );
+
         board.remove();
     },
 );
@@ -416,31 +480,39 @@ test(
     "Cancels a highlighted drag without making a move or losing the piece.",
     async () => {
         const { board, dispatch, } = create_drag_board();
+
         dispatch(
             "pointerdown",
             "e2",
         );
+
         dispatch(
             "pointermove",
             "e4",
         );
+
         await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
         dispatch(
             "pointercancel",
             "e4",
         );
+
         dispatch(
             "pointerup",
             "e4",
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             [],
         );
+
         assert.equal(
             board.shadowRoot.querySelectorAll(".drag_target",).length,
             0,
         );
+
         assert.ok(board.shadowRoot.querySelector('[data-square="e2"] .piece',),);
         board.remove();
     },
@@ -455,17 +527,21 @@ for (const orientation of ["white", "black",]) {
                     for (const fraction of [.0001, .5, .9999,]) {
                         for (const fraction_y of [.0001, .5, .9999,]) {
                             const { board, dispatch, } = create_drag_board({ orientation, },);
+
                             dispatch(
                                 "pointerdown",
                                 "e2",
                                 { pointer_type, },
                             );
+
                             dispatch(
                                 "pointermove",
                                 previous_square,
                                 { pointer_type, },
                             );
+
                             await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
                             dispatch(
                                 "pointerup",
                                 "e4",
@@ -475,14 +551,17 @@ for (const orientation of ["white", "black",]) {
                                     fraction_y,
                                 },
                             );
+
                             assert.deepEqual(
                                 board.get_uci_moves(),
                                 ["e2e4",],
                             );
+
                             assert.equal(
                                 board.shadowRoot.querySelector(".board",).classList.contains("dragging",),
                                 false,
                             );
+
                             board.remove();
                         }
                     }
@@ -496,38 +575,47 @@ test(
     "Clears a highlighted target when the pointer moves clearly outside it before release.",
     async () => {
         const { board, dispatch, } = create_drag_board();
+
         dispatch(
             "pointerdown",
             "e2",
         );
+
         dispatch(
             "pointermove",
             "e4",
             { fraction: .0001, },
         );
+
         await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
         assert.equal(
             board.shadowRoot.querySelector(".drag_target",)?.dataset.square,
             "e4",
         );
+
         dispatch(
             "pointermove",
             "e4",
             { fraction: -.05, },
         );
+
         dispatch(
             "pointerup",
             "e4",
             { fraction: -.05, },
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             [],
         );
+
         assert.equal(
             board.shadowRoot.querySelector(".board",).classList.contains("dragging",),
             false,
         );
+
         board.remove();
     },
 );
@@ -540,12 +628,14 @@ test(
                 const { board, dispatch, } = create_drag_board({ orientation, },);
                 const artwork = board.shadowRoot.querySelector('[data-square="e2"] svg',);
                 const square_bounds = artwork.getBoundingClientRect();
+
                 artwork.getBoundingClientRect = () => new window.DOMRect(
                     square_bounds.left + square_bounds.width / 4,
                     square_bounds.top + square_bounds.height / 4,
                     square_bounds.width / 2,
                     square_bounds.height / 2,
                 );
+
                 dispatch(
                     "pointerdown",
                     "e2",
@@ -554,18 +644,22 @@ test(
                         fraction_y: .5,
                     },
                 );
+
                 dispatch(
                     "pointermove",
                     "e4",
                 );
+
                 dispatch(
                     "pointerup",
                     "e4",
                 );
+
                 assert.deepEqual(
                     board.get_uci_moves(),
                     offset_px >= -4 ? ["e2e4",] : [],
                 );
+
                 board.remove();
             }
         }
@@ -578,40 +672,49 @@ test(
         const { board, dispatch, } = create_drag_board();
         const artwork = board.shadowRoot.querySelector('[data-square="e2"] svg',);
         const square_bounds = artwork.getBoundingClientRect();
+
         artwork.getBoundingClientRect = () => new window.DOMRect(
             square_bounds.left + square_bounds.width / 4,
             square_bounds.top + square_bounds.height / 4,
             square_bounds.width / 2,
             square_bounds.height / 2,
         );
+
         dispatch(
             "pointerdown",
             "e2",
             { fraction: .01, },
         );
+
         dispatch(
             "pointerup",
             "e2",
             { fraction: .01, },
         );
+
         assert.ok(board.shadowRoot.querySelector('[data-square="e2"]',).classList.contains("selected",),);
+
         dispatch(
             "pointerdown",
             "e2",
             { fraction: .01, },
         );
+
         dispatch(
             "pointermove",
             "e4",
         );
+
         dispatch(
             "pointerup",
             "e4",
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             [],
         );
+
         board.remove();
     },
 );
@@ -623,24 +726,29 @@ test(
             for (const fraction of [.0001, .9999,]) {
                 const { board, dispatch, } = create_drag_board({ orientation, },);
                 board.shadowRoot.elementFromPoint = () => board.shadowRoot.querySelector('[data-square="f4"]',);
+
                 dispatch(
                     "pointerdown",
                     "e2",
                 );
+
                 dispatch(
                     "pointermove",
                     "e4",
                     { fraction, },
                 );
+
                 dispatch(
                     "pointerup",
                     "e4",
                     { fraction, },
                 );
+
                 assert.deepEqual(
                     board.get_uci_moves(),
                     ["e2e4",],
                 );
+
                 board.remove();
             }
         }
@@ -651,32 +759,40 @@ test(
     "Rejects a release in an illegal square after highlighting a different legal square.",
     async () => {
         const { board, dispatch, } = create_drag_board();
+
         dispatch(
             "pointerdown",
             "e2",
         );
+
         dispatch(
             "pointermove",
             "e4",
             { fraction: .01, },
         );
+
         await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
         assert.equal(
             board.shadowRoot.querySelector(".drag_target",)?.dataset.square,
             "e4",
         );
+
         dispatch(
             "pointerup",
             "d4",
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             [],
         );
+
         assert.equal(
             board.shadowRoot.querySelector(".drag_target",),
             null,
         );
+
         assert.ok(board.shadowRoot.querySelector('[data-square="e2"] .piece',),);
         board.remove();
     },
@@ -689,16 +805,19 @@ for (const orientation of ["white", "black",]) {
             async (context,) => {
                 const { board, dispatch, } = create_drag_board({ orientation, },);
                 context.after(() => board.remove(),);
+
                 dispatch(
                     "pointerdown",
                     "e2",
                     { pointer_type, },
                 );
+
                 dispatch(
                     "pointermove",
                     "e3",
                     { pointer_type, },
                 );
+
                 await new Promise((resolve,) => requestAnimationFrame(resolve,),);
 
                 for (const fraction of [.0001, .5, .9999,]) {
@@ -708,21 +827,25 @@ for (const orientation of ["white", "black",]) {
                             fraction_y,
                             pointer_type,
                         };
+
                         dispatch(
                             "pointermove",
                             "e4",
                             parameters,
                         );
+
                         assert.equal(
                             board.shadowRoot.querySelector(".drag_target",)?.dataset.square,
                             "e4",
                             "The full destination square must be highlighted before the next motion frame.",
                         );
+
                         dispatch(
                             "pointermove",
                             "d4",
                             parameters,
                         );
+
                         assert.equal(
                             board.shadowRoot.querySelector(".drag_target",),
                             null,
@@ -734,22 +857,35 @@ for (const orientation of ["white", "black",]) {
                 dispatch(
                     "pointermove",
                     "e4",
-                    { pointer_type, fraction: .0001, fraction_y: .9999, },
+                    {
+                        pointer_type,
+                        fraction: .0001,
+                        fraction_y: .9999,
+                    },
                 );
+
                 assert.equal(
                     board.shadowRoot.querySelector(".drag_target",)?.dataset.square,
                     "e4",
                 );
+
                 dispatch(
                     "pointerup",
                     "e4",
-                    { pointer_type, fraction: .0001, fraction_y: .9999, },
+                    {
+                        pointer_type,
+                        fraction: .0001,
+                        fraction_y: .9999,
+                    },
                 );
+
                 await new Promise((resolve,) => requestAnimationFrame(resolve,),);
+
                 assert.deepEqual(
                     board.get_uci_moves(),
                     ["e2e4",],
                 );
+
                 assert.equal(
                     board.shadowRoot.querySelector(".drag_target",),
                     null,

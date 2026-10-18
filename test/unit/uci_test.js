@@ -16,6 +16,7 @@ for (const notation of ["e2e4", "e1g1", "e8c8", "a7a8q", "a7a8r", "h2h1b", "h2h1
                     2,
                 ),
             );
+
             assert.equal(
                 move.to,
                 notation.slice(
@@ -23,6 +24,7 @@ for (const notation of ["e2e4", "e1g1", "e8c8", "a7a8q", "a7a8r", "h2h1b", "h2h1
                     4,
                 ),
             );
+
             assert.equal(
                 Object.hasOwn(
                     move,
@@ -30,6 +32,7 @@ for (const notation of ["e2e4", "e1g1", "e8c8", "a7a8q", "a7a8r", "h2h1b", "h2h1
                 ),
                 notation.length === 5,
             );
+
             assert.equal(
                 format_uci_move(move,),
                 notation,
@@ -55,9 +58,17 @@ test(
     () => {
         assert.deepEqual(
             parse_uci_move("e2e5",),
-            { from: "e2", to: "e5", },
+            {
+                from: "e2",
+                to: "e5",
+            },
         );
-        const move = Object.freeze({ from: "b1", to: "c3", promotion: undefined, },);
+
+        const move = Object.freeze({
+            from: "b1",
+            to: "c3",
+            promotion: undefined,
+        },);
 
         assert.equal(
             format_uci_move(move,),

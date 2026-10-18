@@ -11,6 +11,7 @@ const DEMO_DIRECTORY = fileURLToPath(new URL(
 
 export default defineConfig({
     plugins: [react(), tailwindcss(),],
+
     resolve: {
         alias: {
             "@": DEMO_DIRECTORY,

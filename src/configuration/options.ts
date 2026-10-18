@@ -2,6 +2,7 @@ import type { Color, Piece, PieceSymbol, Square, } from "chess.js";
 
 import type { ChessboardErrorDetail, ChessboardStatus, PromotionRequest, } from "../api/types.js";
 import type { BoardSound, } from "../media/audio.js";
+
 import { get_promotion_name, } from "../rendering/pieces.js";
 
 export type PieceKey = `${Color}${PieceSymbol}`;
@@ -47,10 +48,12 @@ export type PieceOptions = {
         PieceKey,
         string
     >>;
+
     resolve_url: ((
         piece: Piece,
         square: Square,
     ) => string | null) | null;
+
     scale: number;
     padding_px: number;
 };
@@ -58,14 +61,17 @@ export type PieceOptions = {
 export type SoundOptions = {
     volume: number;
     player_color: Color | null;
+
     urls: Partial<Record<
         BoardSound,
         string | null
     >>;
+
     enabled: Record<
         BoardSound,
         boolean
     >;
+
     should_play_on_moves: boolean;
     should_play_on_history: boolean;
     should_play_on_replay: boolean;
@@ -75,6 +81,7 @@ export type PromotionOptions = {
     mode: "choose" | "automatic" | "external";
     default_piece: "q" | "r" | "b" | "n";
     choices: ("q" | "r" | "b" | "n")[];
+
     request: ((
         request: PromotionRequest,
         complete: (piece: "q" | "r" | "b" | "n" | null,) => void,
@@ -97,20 +104,24 @@ export type BoardLabels = {
     no_captures: string;
     captures_description: string;
     material_description: string;
+
     format_material_label: (
         context: MaterialContext,
         default_label: string,
     ) => string;
+
     format_capture: (
         color: Color,
         piece: PieceSymbol,
         count: number,
         default_label: string,
     ) => string;
+
     format_advantage: (
         difference: number,
         default_label: string,
     ) => string;
+
     format_square: (
         square: Square,
         piece: Piece | undefined,
@@ -119,8 +130,10 @@ export type BoardLabels = {
         is_check: boolean,
         default_label: string,
     ) => string;
+
     format_promotion: (piece: PieceSymbol,) => string;
     format_material: (context: MaterialContext,) => string;
+
     format_error: (
         reason: ChessboardErrorDetail["reason"],
         message: string,
@@ -153,16 +166,20 @@ export type ResolvedCustomization = {
 
 export type CustomizationOptions = {
     accessibility?: Partial<AccessibilityOptions>;
+
     interaction?: Partial<Omit<
         InteractionOptions,
         "keyboard_shortcuts"
     >> & { keyboard_shortcuts?: Partial<KeyboardShortcuts>; };
+
     annotations?: Partial<AnnotationOptions>;
     pieces?: Partial<PieceOptions>;
+
     sound?: Partial<Omit<
         SoundOptions,
         "enabled"
     >> & { enabled?: Partial<SoundOptions["enabled"]>; };
+
     promotion?: Partial<PromotionOptions>;
     labels?: Partial<BoardLabels>;
     renderers?: Partial<BoardRenderers>;
@@ -176,6 +193,7 @@ export const DEFAULT_LABELS: BoardLabels = {
     no_captures: "No captures",
     captures_description: "Captured pieces from recorded moves.",
     material_description: "Remaining material: pawn 1, knight 3, bishop 3, rook 5, queen 9. Kings have no point value.",
+
     format_material_label: (
         context,
         default_label,
@@ -184,6 +202,7 @@ export const DEFAULT_LABELS: BoardLabels = {
 
         return default_label;
     },
+
     format_capture: (
         color,
         piece,
@@ -196,6 +215,7 @@ export const DEFAULT_LABELS: BoardLabels = {
 
         return default_label;
     },
+
     format_advantage: (
         difference,
         default_label,
@@ -204,6 +224,7 @@ export const DEFAULT_LABELS: BoardLabels = {
 
         return default_label;
     },
+
     format_square: (
         square,
         piece,
@@ -220,8 +241,10 @@ export const DEFAULT_LABELS: BoardLabels = {
 
         return default_label;
     },
+
     format_promotion: (piece,) => `Promote to ${get_promotion_name(piece,)}`,
     format_material: (context,) => `${context.piece_count} pieces · ${context.points} ${context.points === 1 ? "pt" : "pts"}`,
+
     format_error: (
         reason,
         message,
@@ -231,11 +254,13 @@ export const DEFAULT_LABELS: BoardLabels = {
         return message;
     },
 };
+
 const DEFAULT_CUSTOMIZATION: ResolvedCustomization = {
     accessibility: {
         announce_moves: false,
         announce_annotations: false,
     },
+
     interaction: {
         can_drag: true,
         can_click_move: true,
@@ -244,6 +269,7 @@ const DEFAULT_CUSTOMIZATION: ResolvedCustomization = {
         can_premove: false,
         touch_mode: "move",
         drag_threshold_px: 5,
+
         keyboard_shortcuts: {
             undo: ["ArrowLeft", "ArrowDown",],
             redo: ["ArrowRight", "ArrowUp",],
@@ -255,6 +281,7 @@ const DEFAULT_CUSTOMIZATION: ResolvedCustomization = {
             down: ["Shift+ArrowDown",],
         },
     },
+
     annotations: {
         clear_on_left_click: "all",
         clear_groups: [],
@@ -263,19 +290,48 @@ const DEFAULT_CUSTOMIZATION: ResolvedCustomization = {
         arrow_head_width_squares: 0.44,
         arrow_head_length_squares: 0.34,
     },
-    pieces: { urls: {}, resolve_url: null, scale: 1, padding_px: 0, },
+
+    pieces: {
+        urls: {},
+        resolve_url: null,
+        scale: 1,
+        padding_px: 0,
+    },
+
     sound: {
         volume: 0.6,
         player_color: null,
         urls: {},
-        enabled: { move: true, capture: true, check: true, checkmate: true, draw: true, win: true, lose: true, },
+
+        enabled: {
+            move: true,
+            capture: true,
+            check: true,
+            checkmate: true,
+            draw: true,
+            win: true,
+            lose: true,
+        },
+
         should_play_on_moves: true,
         should_play_on_history: true,
         should_play_on_replay: true,
     },
-    promotion: { mode: "choose", default_piece: "q", choices: ["q", "r", "b", "n",], request: null, },
+
+    promotion: {
+        mode: "choose",
+        default_piece: "q",
+        choices: ["q", "r", "b", "n",],
+        request: null,
+    },
+
     labels: DEFAULT_LABELS,
-    renderers: { square_overlay: null, promotion_choice: null, material: null, },
+
+    renderers: {
+        square_overlay: null,
+        promotion_choice: null,
+        material: null,
+    },
 };
 
 function copy_configuration(input: unknown,): unknown {
@@ -330,7 +386,10 @@ function merge_configuration(
             }
 
             merged[key] = Object.keys(fallback,).length === 0
-                ? { ...(current[key] as object), ...entry, }
+                ? {
+                    ...(current[key] as object),
+                    ...entry,
+                }
                 : merge_configuration(
                     fallback as Record<
                         string,
@@ -349,6 +408,7 @@ function merge_configuration(
             const is_nullable_color = key === "player_color" && (entry === "w" || entry === "b");
             const is_invalid_nullable = entry !== null && typeof entry !== "function" && !is_nullable_color;
             const is_invalid_array = !Array.isArray(entry,) || entry.some((part,) => typeof part !== "string",);
+
             const is_invalid = fallback === null ? is_invalid_nullable
                 : Array.isArray(fallback,) ? is_invalid_array
                     : typeof entry !== typeof fallback;
@@ -387,6 +447,7 @@ export function resolve_customization(
         current,
         selected,
     ) as ResolvedCustomization;
+
     const ranges = [
         [resolved.interaction.drag_threshold_px, 0, 100,],
         [resolved.pieces.scale, 0.1, 2,],

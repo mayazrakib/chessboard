@@ -9,35 +9,43 @@ export default defineConfig({
     testMatch: "**/*_test.js",
     fullyParallel: true,
     workers: 2,
+
     projects: [
         {
             name: "chromium",
+
             use: {
                 browserName: "chromium",
             },
         },
         {
             name: "firefox",
+
             use: {
                 browserName: "firefox",
             },
         },
         {
             name: "webkit",
+
             use: {
                 browserName: "webkit",
             },
         },
     ],
+
     use: {
         baseURL: TEST_SERVER_URL,
+
         viewport: {
             width: 1000,
             height: 900,
         },
+
         reducedMotion: "no-preference",
         trace: "retain-on-failure",
     },
+
     webServer: {
         command: `node_modules/.bin/vite --host ${TEST_SERVER_HOST} --port ${TEST_SERVER_PORT} --strictPort`,
         reuseExistingServer: true,

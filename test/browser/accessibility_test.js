@@ -21,6 +21,7 @@ function calculate_contrast(
         calculate_luminance(foreground,),
         calculate_luminance(background,),
     );
+
     const dark = Math.min(
         calculate_luminance(foreground,),
         calculate_luminance(background,),
@@ -31,10 +32,15 @@ function calculate_contrast(
 
 test.beforeEach(async ({ page, },) => {
     await page.goto("/test/browser/drag.html",);
+
     await page.evaluate(async () => {
         const board = document.querySelector("chess-board",);
         await board.when_ready();
-        board.set_options({ animation_duration: 0, is_muted: true, },);
+
+        board.set_options({
+            animation_duration: 0,
+            is_muted: true,
+        },);
     },);
 },);
 
@@ -51,15 +57,19 @@ test(
                 tab_stops: cells.filter((cell,) => cell.tabIndex === 0,).length,
             };
         },);
+
         expect(semantics.grid_label,).toBe("Chessboard",);
         expect(semantics.named_cells,).toBe(64,);
         expect(semantics.tab_stops,).toBe(1,);
+
         const e2 = page.getByRole(
             "gridcell",
             { name: /^e2,/, },
         );
+
         await e2.focus();
         await page.keyboard.press("Shift+ArrowRight",);
+
         await expect(page.getByRole(
             "gridcell",
             { name: /^f2,/, },
@@ -74,23 +84,31 @@ test(
             const board = document.querySelector("chess-board",);
             board.set_position("8/P7/8/8/8/8/7k/4K3 w - - 0 1",);
         },);
+
         await page.locator('[data-square="a7"]',).click();
         await page.locator('[data-square="a8"]',).click();
+
         const promotion = page.getByRole(
             "dialog",
             { name: "Choose promotion piece", },
         );
+
         await expect(promotion,).toBeVisible();
+
         await expect(page.getByRole(
             "button",
             { name: "Promote to queen", },
         ),).toBeFocused();
+
         await page.evaluate(() => document.querySelector("chess-board",).set_options({ interactive: false, },),);
+
         await page.getByRole(
             "gridcell",
             { name: /^a7,/, },
         ).focus();
+
         await page.keyboard.press("Shift+ArrowRight",);
+
         await expect(page.getByRole(
             "gridcell",
             { name: /^b7,/, },
@@ -103,11 +121,23 @@ test(
     async ({ page, },) => {
         const announcements = await page.evaluate(async () => {
             const board = document.querySelector("chess-board",);
-            board.set_options({ accessibility: { announce_annotations: true, announce_moves: true, }, },);
+
+            board.set_options({
+                accessibility: {
+                    announce_annotations: true,
+                    announce_moves: true,
+                },
+            },);
+
             board.move_uci("e2e4",);
             await Promise.resolve();
             const move = board.shadowRoot.querySelector('[aria-live="polite"]',).textContent;
-            board.set_annotations([{ from: "e4", to: "e5", },],);
+
+            board.set_annotations([{
+                from: "e4",
+                to: "e5",
+            },],);
+
             await Promise.resolve();
 
             return {
@@ -115,8 +145,14 @@ test(
                 move,
             };
         },);
-        expect(announcements,).toEqual({ annotations: "1 annotation.", move: "Move e4.", },);
+
+        expect(announcements,).toEqual({
+            annotations: "1 annotation.",
+            move: "Move e4.",
+        },);
+
         await page.goto("/",);
+
         const colors = await page.locator("body",).evaluate((body,) => {
             const style = getComputedStyle(body,);
 
@@ -126,12 +162,14 @@ test(
                 canvas.height = 1;
                 const context = canvas.getContext("2d",);
                 context.fillStyle = color;
+
                 context.fillRect(
                     0,
                     0,
                     1,
                     1,
                 );
+
                 const [red, green, blue,] = context.getImageData(
                     0,
                     0,
@@ -147,6 +185,7 @@ test(
                 foreground: resolve_color(style.color,),
             };
         },);
+
         expect(calculate_contrast(
             colors.foreground,
             colors.background,

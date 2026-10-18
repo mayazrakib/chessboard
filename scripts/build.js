@@ -8,12 +8,14 @@ const PACKAGE_DIRECTORY = new URL(
     "../",
     import.meta.url,
 );
+
 const OUTPUT_DIRECTORY = new URL(
     "../dist/",
     import.meta.url,
 );
 
 await build_sprite();
+
 await rm(
     OUTPUT_DIRECTORY,
     {
@@ -21,6 +23,7 @@ await rm(
         force: true,
     },
 );
+
 execFileSync(
     process.execPath,
     [fileURLToPath(new URL(
@@ -42,10 +45,12 @@ for (const filename of await readdir(OUTPUT_DIRECTORY,)) {
         filename,
         OUTPUT_DIRECTORY,
     );
+
     const source = await readFile(
         output_url,
         "utf8",
     );
+
     const formatted_source = source.replace(
         /(\S)[ \t]*\r?\n(?:[ \t]*\r?\n)*(?=[ \t]*\/\*\*)/g,
         "$1\n\n",

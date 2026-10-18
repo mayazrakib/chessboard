@@ -43,9 +43,11 @@ for (const orientation of ["white", "black",]) {
             async ({ page, },) => {
                 await page.goto("/test/browser/drag.html",);
                 await page.locator(".board.ready",).waitFor();
+
                 const observations = await page.evaluate(
                     ({ scenario, orientation, },) => {
                         const board = document.querySelector("chess-board",);
+
                         board.set_options({
                             orientation,
                             animation_duration: 0,
@@ -67,6 +69,7 @@ for (const orientation of ["white", "black",]) {
 
                         board.set_options({ animation_duration: 180, },);
                         board.undo();
+
                         const motions = scenario.squares.map((square,) => {
                             const piece = board.shadowRoot.querySelector(`[data-square="${square}"] .piece`,);
                             const animation = piece.getAnimations()[0];
@@ -89,6 +92,7 @@ for (const orientation of ["white", "black",]) {
                         orientation,
                     },
                 );
+
                 expect(observations.position,).toBe(observations.previous_position,);
 
                 for (const motion of observations.motions) {
@@ -109,6 +113,7 @@ test(
 
         for (const has_reduced_motion of [false, true,]) {
             await page.emulateMedia({ reducedMotion: has_reduced_motion ? "reduce" : "no-preference", },);
+
             const animation_count = await page.evaluate(
                 (has_reduced_motion,) => {
                     const board = document.querySelector("chess-board",);
@@ -120,6 +125,7 @@ test(
                 },
                 has_reduced_motion,
             );
+
             expect(animation_count,).toBe(0,);
         }
     },
@@ -130,6 +136,7 @@ test(
     async ({ page, },) => {
         await page.goto("/test/browser/drag.html",);
         await page.locator(".board.ready",).waitFor();
+
         const state = await page.evaluate(async () => {
             const board = document.querySelector("chess-board",);
             board.set_options({ animation_duration: 80, },);
@@ -147,6 +154,7 @@ test(
                 piece_count: board.shadowRoot.querySelectorAll(".piece",).length,
             };
         },);
+
         expect(state.position,).toBe(state.initial_position,);
         expect(state.moving_count,).toBe(0,);
         expect(state.piece_count,).toBe(32,);

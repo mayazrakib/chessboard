@@ -2,10 +2,12 @@ import { mkdir, readFile, writeFile, } from "node:fs/promises";
 
 const COLORS = ["white", "black",];
 const PIECES = ["pawn", "knight", "bishop", "rook", "queen", "king",];
+
 const ASSET_DIRECTORY = new URL(
     "../asset/pieces/",
     import.meta.url,
 );
+
 const SOURCE_DIRECTORY = new URL(
     "../asset/pieces/cburnett/",
     import.meta.url,
@@ -17,6 +19,7 @@ export async function build_sprite() {
     for (const color of COLORS) {
         for (const piece of PIECES) {
             const name = `${color}-${piece}`;
+
             const artwork = await readFile(
                 new URL(
                     `${color}_${piece}.svg`,
@@ -24,6 +27,7 @@ export async function build_sprite() {
                 ),
                 "utf8",
             );
+
             const svg_body = artwork.match(/<svg\b[^>]*>([\s\S]*?)<\/svg>/,)?.[1];
 
             if (!svg_body || /<image\b/i.test(svg_body,)) {
@@ -38,6 +42,7 @@ export async function build_sprite() {
                     indentation - 2,
                 ) * 2,)}${line.trim()}`;
             },).join("\n",);
+
             symbols.push(`    <symbol id="${name}" viewBox="0 0 45 45">\n${vector_paths}\n    </symbol>`,);
         }
     }
@@ -46,6 +51,7 @@ export async function build_sprite() {
         ASSET_DIRECTORY,
         { recursive: true, },
     );
+
     await writeFile(
         new URL(
             "pieces.svg",

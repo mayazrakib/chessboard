@@ -17,6 +17,7 @@ const CONTROL_STATES = new Map<
     string,
     ControlState
 >();
+
 const CONTROL_LISTENERS = new Map<
     string,
     Set<() => void>
@@ -39,6 +40,7 @@ export function update_control(
             ...changes,
         },
     );
+
     CONTROL_LISTENERS.get(identifier,)?.forEach((listener,) => listener(),);
 }
 
@@ -56,10 +58,12 @@ function use_control(
     return useSyncExternalStore(
         (listener,) => {
             const listeners = CONTROL_LISTENERS.get(identifier,) ?? new Set<() => void>();
+
             CONTROL_LISTENERS.set(
                 identifier,
                 listeners,
             );
+
             listeners.add(listener,);
 
             return () => listeners.delete(listener,);
@@ -76,6 +80,7 @@ function emit_control_change(
         identifier,
         changes,
     );
+
     document.getElementById(identifier,)?.dispatchEvent(new CustomEvent(
         "controlchange",
         { detail: changes, },
@@ -114,8 +119,10 @@ export function BoundSlider({ id, initial_value, min, max, step, disabled, "aria
             is_disabled: disabled,
         },
     );
+
     const container = useRef<HTMLDivElement>(null,);
     const [mount_revision, set_mount_revision,] = useState(0,);
+
     useEffect(
         () => {
             const element = container.current;
@@ -125,6 +132,7 @@ export function BoundSlider({ id, initial_value, min, max, step, disabled, "aria
             }
 
             let was_visible = false;
+
             const observer = new ResizeObserver(([entry,],) => {
                 const is_visible = (entry?.contentRect.width ?? 0) > 0;
 
@@ -134,6 +142,7 @@ export function BoundSlider({ id, initial_value, min, max, step, disabled, "aria
 
                 was_visible = is_visible;
             },);
+
             observer.observe(element,);
 
             return () => observer.disconnect();

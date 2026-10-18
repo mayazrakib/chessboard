@@ -40,9 +40,13 @@ for (const [key, allowed,] of [
 
             for (const option of ["invalid", null, false, 0,]) {
                 assert.throws(
-                    () => board.set_options({ show_coordinates: false, [key]: option, },),
+                    () => board.set_options({
+                        show_coordinates: false,
+                        [key]: option,
+                    },),
                     TypeError,
                 );
+
                 assert.deepEqual(
                     board.get_options(),
                     previous_options,
@@ -90,6 +94,7 @@ test(
     () => {
         const board = create_board();
         const default_duration_ms = board.get_options().animation_duration;
+
         assert.equal(
             default_duration_ms,
             260,
@@ -128,9 +133,13 @@ test(
         const previous_options = board.get_options();
 
         assert.throws(
-            () => board.set_options({ orientation: "black", assets: { piece_sprite_url: "", }, },),
+            () => board.set_options({
+                orientation: "black",
+                assets: { piece_sprite_url: "", },
+            },),
             TypeError,
         );
+
         assert.deepEqual(
             board.get_options(),
             previous_options,
@@ -156,14 +165,17 @@ test(
             board.get_options().orientation,
             "white",
         );
+
         assert.equal(
             board.get_assets().piece_sprite_url,
             original_sprite_url,
         );
+
         assert.deepEqual(
             board.get_legal_moves("e2",).map((move,) => move.to,),
             ["e3", "e4",],
         );
+
         assert.equal(
             board.get_status().turn,
             "w",
@@ -177,17 +189,29 @@ test(
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
         board.set_options({ move_mode: "controlled", },);
-        const request = board.request_move({ from: "e2", to: "e4", },);
+
+        const request = board.request_move({
+            from: "e2",
+            to: "e4",
+        },);
+
         request.input.to = "a8";
         const pending = board.get_pending_move();
         pending.input.from = "a1";
 
         assert.deepEqual(
             board.get_pending_move().input,
-            { from: "e2", to: "e4", },
+            {
+                from: "e2",
+                to: "e4",
+            },
         );
 
-        board.set_annotations([{ from: "d4", color: "blue", },],);
+        board.set_annotations([{
+            from: "d4",
+            color: "blue",
+        },],);
+
         board.get_annotations()[0].from = "a8";
         board.get_marks()[0].color = "red";
 
@@ -195,12 +219,17 @@ test(
             board.get_annotations()[0].from,
             "d4",
         );
+
         assert.equal(
             board.get_marks()[0].color,
             "blue",
         );
 
-        board.set_premove({ from: "e7", to: "e5", },);
+        board.set_premove({
+            from: "e7",
+            to: "e5",
+        },);
+
         const premove = board.get_premove();
         premove.to = "e6";
 
@@ -213,25 +242,49 @@ test(
 
 for (const invalid_mark of [
     { from: "a9", },
-    { from: "a1", to: "i1", },
-    { from: "a1", color: "purple", },
-    { from: "a1", source: "unknown", },
-    { from: "a1", id: 1, },
-    { from: "a1", group: 1, },
-    { from: "a1", label: false, },
+    {
+        from: "a1",
+        to: "i1",
+    },
+    {
+        from: "a1",
+        color: "purple",
+    },
+    {
+        from: "a1",
+        source: "unknown",
+    },
+    {
+        from: "a1",
+        id: 1,
+    },
+    {
+        from: "a1",
+        group: 1,
+    },
+    {
+        from: "a1",
+        label: false,
+    },
 ]) {
     test(
         `Invalid annotation ${JSON.stringify(invalid_mark,)} preserves existing annotations.`,
         () => {
             const board = create_board();
             board.set_options({ interaction: { can_premove: true, }, },);
-            board.set_annotations([{ id: "original", from: "e4", },],);
+
+            board.set_annotations([{
+                id: "original",
+                from: "e4",
+            },],);
+
             const original_annotations = board.get_annotations();
 
             assert.throws(
                 () => board.set_annotations([invalid_mark,],),
                 TypeError,
             );
+
             assert.deepEqual(
                 board.get_annotations(),
                 original_annotations,
@@ -244,24 +297,43 @@ test(
     "Annotation groups preserve unrelated entries and prevent identifier collisions.",
     () => {
         const board = create_board();
+
         board.set_annotations(
-            [{ id: "engine_arrow", from: "e2", to: "e4", },],
+            [{
+                id: "engine_arrow",
+                from: "e2",
+                to: "e4",
+            },],
             "engine",
         );
+
         board.set_annotations(
-            [{ id: "user_circle", from: "d4", },],
+            [{
+                id: "user_circle",
+                from: "d4",
+            },],
             "user",
         );
 
         assert.throws(
             () => board.set_annotations(
-                [{ id: "engine_arrow", from: "a1", },],
+                [{
+                    id: "engine_arrow",
+                    from: "a1",
+                },],
                 "user",
             ),
             TypeError,
         );
+
         assert.throws(
-            () => board.set_annotations([{ id: "same", from: "a1", }, { id: "same", from: "b1", },],),
+            () => board.set_annotations([{
+                id: "same",
+                from: "a1",
+            }, {
+                id: "same",
+                from: "b1",
+            },],),
             TypeError,
         );
 
@@ -271,6 +343,7 @@ test(
             board.get_annotations().map((annotation,) => annotation.id,),
             ["engine_arrow",],
         );
+
         assert.equal(
             board.update_annotation(
                 "missing",
@@ -278,6 +351,7 @@ test(
             ),
             false,
         );
+
         assert.equal(
             board.remove_annotation("missing",),
             false,
@@ -295,6 +369,7 @@ for (const orientation of ["white", "black",]) {
                 537.5,
                 421.25,
             );
+
             const board = create_board();
             board.options.orientation = orientation;
             board.board.getBoundingClientRect = () => bounds;
@@ -312,12 +387,16 @@ for (const orientation of ["white", "black",]) {
                         ),
                         square,
                     );
+
                     assert.deepEqual(
                         board.get_shape_point(
                             square,
                             orientation === "black",
                         ),
-                        { x: column + 0.5, y: row + 0.5, },
+                        {
+                            x: column + 0.5,
+                            y: row + 0.5,
+                        },
                     );
                 }
             }
@@ -343,11 +422,17 @@ test(
 
         for (const playable_color of ["both", "w", "b",]) {
             for (const premove_color of [undefined, "w", "b",]) {
-                board.set_options({ playable_color, premove_color, },);
+                board.set_options({
+                    playable_color,
+                    premove_color,
+                },);
 
                 for (const color of ["w", "b",]) {
                     assert.equal(
-                        board.can_select_piece({ color, type: "p", },),
+                        board.can_select_piece({
+                            color,
+                            type: "p",
+                        },),
                         (playable_color === "both" || playable_color === color) && (!premove_color || color === premove_color),
                     );
                 }
@@ -361,16 +446,23 @@ test(
     () => {
         const board = create_board();
         board.set_options({ move_mode: "controlled", },);
-        const request = board.request_move({ from: "e2", to: "e4", },);
+
+        const request = board.request_move({
+            from: "e2",
+            to: "e4",
+        },);
+
         board.get_pgn();
         board.get_status();
         board.get_legal_moves("e2",);
         const revision = board.get_revision();
         const ended_requests = [];
+
         board.addEventListener(
             "chessboard:move_request_end",
             (event,) => ended_requests.push(event.detail,),
         );
+
         board.begin_position_change(
             "position loaded",
             "api",
@@ -380,25 +472,33 @@ test(
             board.get_revision(),
             revision + 1,
         );
+
         assert.equal(
             board.cached_pgn,
             null,
         );
+
         assert.equal(
             board.cached_status,
             null,
         );
+
         assert.equal(
             board.legal_moves_cache.size,
             0,
         );
+
         assert.equal(
             board.get_pending_move(),
             null,
         );
+
         assert.deepEqual(
             ended_requests,
-            [{ request, status: "stale", },],
+            [{
+                request,
+                status: "stale",
+            },],
         );
     },
 );
@@ -409,11 +509,13 @@ test(
         const board = create_board();
         let finish_animation;
         let cancel_animation;
+
         const completed = {
             finished: new Promise((resolve,) => {
                 finish_animation = resolve;
             },),
         };
+
         const cancelled = {
             finished: new Promise((
                 resolve,
@@ -422,12 +524,15 @@ test(
                 cancel_animation = reject;
             },),
         };
+
         board.track_animation(completed,);
         board.track_animation(cancelled,);
         let has_finished = false;
+
         const completion = board.when_animation_complete().then(() => {
             has_finished = true;
         },);
+
         finish_animation();
         await completed.finished;
 
@@ -443,10 +548,12 @@ test(
             has_finished,
             true,
         );
+
         assert.equal(
             board.active_animations.size,
             0,
         );
+
         assert.ok(board instanceof ChessboardElement,);
     },
 );
@@ -463,8 +570,12 @@ test(
 
         assert.deepEqual(
             board.captured_pieces,
-            { w: ["p",], b: [], },
+            {
+                w: ["p",],
+                b: [],
+            },
         );
+
         assert.equal(
             board.get_uci_position(),
             "position startpos moves e2e4 d7d5 e4d5",
@@ -475,8 +586,14 @@ test(
 
         assert.deepEqual(
             board.get_history_state(),
-            { index: 2, length: 3, can_undo: true, can_redo: true, },
+            {
+                index: 2,
+                length: 3,
+                can_undo: true,
+                can_redo: true,
+            },
         );
+
         assert.deepEqual(
             board.captured_pieces.w,
             [],
@@ -510,6 +627,7 @@ test(
             board.redo(),
             null,
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["e2e4", "d7d5", "g1f3",],
@@ -522,7 +640,10 @@ for (const [operation, input, reason,] of [
     ["set_pgn", "1. e5", "invalid_pgn",],
     ["move_uci", "e2e5", "illegal_move",],
     ["move_uci", "invalid", "illegal_move",],
-    ["move", { from: "e2", to: "e5", }, "illegal_move",],
+    ["move", {
+        from: "e2",
+        to: "e5",
+    }, "illegal_move",],
 ]) {
     test(
         `${operation} reports ${reason} without changing position or revision.`,
@@ -530,28 +651,34 @@ for (const [operation, input, reason,] of [
             const board = create_board();
             const initial_position = board.get_position();
             const errors = [];
+
             board.addEventListener(
                 "chessboard:error",
                 (event,) => errors.push(event.detail,),
             );
+
             board[operation](input,);
 
             assert.equal(
                 board.get_position(),
                 initial_position,
             );
+
             assert.equal(
                 board.get_revision(),
                 0,
             );
+
             assert.equal(
                 errors.length,
                 1,
             );
+
             assert.equal(
                 errors[0].reason,
                 reason,
             );
+
             assert.match(
                 errors[0].message,
                 /^[A-Z].*\.$/,
@@ -569,9 +696,13 @@ test(
             board.set_pgn("1. e4 d5 2. exd5 Qxd5",),
             true,
         );
+
         assert.deepEqual(
             board.captured_pieces,
-            { w: ["p",], b: ["p",], },
+            {
+                w: ["p",],
+                b: ["p",],
+            },
         );
 
         const position = "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1";
@@ -580,17 +711,28 @@ test(
             board.set_position(position,),
             true,
         );
+
         assert.deepEqual(
             board.get_history_state(),
-            { index: 0, length: 0, can_undo: false, can_redo: false, },
+            {
+                index: 0,
+                length: 0,
+                can_undo: false,
+                can_redo: false,
+            },
         );
+
         assert.equal(
             board.get_uci_position(),
             `position fen ${position}`,
         );
+
         assert.deepEqual(
             board.captured_pieces,
-            { w: [], b: [], },
+            {
+                w: [],
+                b: [],
+            },
         );
     },
 );
@@ -600,35 +742,47 @@ test(
     () => {
         const board = create_board();
         const prevent_move = (event,) => event.preventDefault();
+
         board.addEventListener(
             "chessboard:move_request",
             prevent_move,
         );
-        const request = board.request_move({ from: "e2", to: "e4", },);
+
+        const request = board.request_move({
+            from: "e2",
+            to: "e4",
+        },);
 
         assert.equal(
             board.get_revision(),
             0,
         );
+
         assert.equal(
             board.commit_move(request.id + 1,),
             null,
         );
+
         assert.equal(
             board.reject_move(request.id + 1,),
             false,
         );
+
         assert.equal(
             board.commit_move(request.id,).san,
             "e4",
         );
 
-        const rejected = board.request_move({ from: "e7", to: "e5", },);
+        const rejected = board.request_move({
+            from: "e7",
+            to: "e5",
+        },);
 
         assert.equal(
             board.reject_move(rejected.id,),
             true,
         );
+
         assert.equal(
             board.get_pending_move(),
             null,
@@ -638,7 +792,11 @@ test(
             "chessboard:move_request",
             prevent_move,
         );
-        board.request_move({ from: "e7", to: "e5", },);
+
+        board.request_move({
+            from: "e7",
+            to: "e5",
+        },);
 
         assert.equal(
             board.get_turn(),
@@ -653,7 +811,35 @@ test(
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
 
-        for (const input of [{ from: "a3", to: "a4", }, { from: "e2", to: "e4", }, { from: "e7", to: "d7", }, { from: "e7", to: "e7", }, { from: "e7", to: "e3", }, { from: "e7", to: "d6", }, { from: "c8", to: "h3", }, { from: "g8", to: "g6", }, { from: "e7", to: "e5", promotion: "q", },]) {
+        for (const input of [{
+            from: "a3",
+            to: "a4",
+        }, {
+            from: "e2",
+            to: "e4",
+        }, {
+            from: "e7",
+            to: "d7",
+        }, {
+            from: "e7",
+            to: "e7",
+        }, {
+            from: "e7",
+            to: "e3",
+        }, {
+            from: "e7",
+            to: "d6",
+        }, {
+            from: "c8",
+            to: "h3",
+        }, {
+            from: "g8",
+            to: "g6",
+        }, {
+            from: "e7",
+            to: "e5",
+            promotion: "q",
+        },]) {
             assert.equal(
                 board.set_premove(input,),
                 false,
@@ -661,9 +847,13 @@ test(
         }
 
         assert.equal(
-            board.set_premove({ from: "e7", to: "e5", },),
+            board.set_premove({
+                from: "e7",
+                to: "e5",
+            },),
             true,
         );
+
         assert.equal(
             board.get_revision(),
             0,
@@ -675,6 +865,7 @@ test(
             board.get_uci_moves(),
             ["e2e4", "e7e5",],
         );
+
         assert.equal(
             board.get_premove(),
             null,
@@ -687,6 +878,7 @@ test(
     () => {
         const board = create_board();
         const errors = [];
+
         board.addEventListener(
             "chessboard:error",
             (event,) => errors.push(event.detail.reason,),
@@ -696,8 +888,12 @@ test(
             throw new Error("Rendering failed.",);
         },]) {
             board.set_options({ piece_renderer: render_piece, },);
+
             const artwork = board.render_piece_art(
-                { color: "w", type: "n", },
+                {
+                    color: "w",
+                    type: "n",
+                },
                 "b1",
             );
 
@@ -722,6 +918,7 @@ test(
         const sounds = [];
         let stop_count = 0;
         board.audio.play = (sound,) => sounds.push(sound,);
+
         board.audio.stop = () => {
             stop_count += 1;
         };
@@ -739,10 +936,12 @@ test(
             sounds,
             ["move",],
         );
+
         assert.equal(
             stop_count,
             1,
         );
+
         assert.equal(
             other_board.is_muted(),
             false,
@@ -762,6 +961,7 @@ test(
             stop_count,
             2,
         );
+
         assert.throws(
             () => board.set_muted("true",),
             TypeError,
@@ -791,7 +991,9 @@ for (const [description, fen, notation, sound,] of [
                 sounds,
                 [],
             );
+
             assert.ok(board.move_uci(notation,),);
+
             assert.deepEqual(
                 sounds,
                 [sound,],
@@ -808,9 +1010,18 @@ test(
         board.audio.play = (name,) => sounds.push(name,);
         board.set_options({ move_mode: "controlled", },);
         board.move_uci("e2e5",);
-        const rejected = board.request_move({ from: "e2", to: "e4", },);
+
+        const rejected = board.request_move({
+            from: "e2",
+            to: "e4",
+        },);
+
         board.reject_move(rejected.id,);
-        const accepted = board.request_move({ from: "e2", to: "e4", },);
+
+        const accepted = board.request_move({
+            from: "e2",
+            to: "e4",
+        },);
 
         assert.deepEqual(
             sounds,
@@ -861,54 +1072,81 @@ test(
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
         const position = board.get_position();
+
         assert.equal(
-            board.set_premove({ from: "e7", to: "e5", },),
+            board.set_premove({
+                from: "e7",
+                to: "e5",
+            },),
             true,
         );
+
         assert.equal(
-            board.set_premove({ from: "e5", to: "e4", },),
+            board.set_premove({
+                from: "e5",
+                to: "e4",
+            },),
             true,
         );
+
         assert.equal(
-            board.set_premove({ from: "g8", to: "f6", },),
+            board.set_premove({
+                from: "g8",
+                to: "f6",
+            },),
             true,
         );
+
         const snapshot = board.get_premoves();
         snapshot[0].to = "e6";
+
         assert.equal(
             board.get_premove().to,
             "e5",
         );
+
         assert.equal(
             board.get_position(),
             position,
         );
+
         assert.equal(
             board.cancel_premove(),
             true,
         );
+
         assert.equal(
             board.get_premoves().length,
             2,
         );
+
         board.move_uci("a2a3",);
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["a2a3", "e7e5",],
         );
+
         assert.deepEqual(
             board.get_premoves(),
-            [{ from: "e5", to: "e4", },],
+            [{
+                from: "e5",
+                to: "e4",
+            },],
         );
+
         board.move_uci("a3a4",);
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["a2a3", "e7e5", "a3a4", "e5e4",],
         );
+
         assert.deepEqual(
             board.get_premoves(),
             [],
         );
+
         assert.equal(
             board.cancel_premove(),
             false,
@@ -922,19 +1160,30 @@ test(
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
         board.set_position("4k3/8/8/8/8/8/4r3/4K2R w - - 0 1",);
+
         assert.equal(
-            board.set_premove({ from: "e2", to: "a2", },),
+            board.set_premove({
+                from: "e2",
+                to: "a2",
+            },),
             true,
         );
+
         assert.equal(
-            board.set_premove({ from: "a2", to: "a3", },),
+            board.set_premove({
+                from: "a2",
+                to: "a3",
+            },),
             true,
         );
+
         board.move_uci("e1e2",);
+
         assert.deepEqual(
             board.get_premoves(),
             [],
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["e1e2",],
@@ -948,23 +1197,37 @@ test(
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
         board.set_options({ move_mode: "controlled", },);
-        board.set_premove({ from: "e7", to: "e5", },);
-        board.set_premove({ from: "e5", to: "e4", },);
+
+        board.set_premove({
+            from: "e7",
+            to: "e5",
+        },);
+
+        board.set_premove({
+            from: "e5",
+            to: "e4",
+        },);
+
         board.move_uci("a2a3",);
         const request = board.get_pending_move();
+
         assert.equal(
             request.source,
             "premove",
         );
+
         assert.equal(
             board.get_premoves().length,
             1,
         );
+
         board.reject_move(request.id,);
+
         assert.deepEqual(
             board.get_premoves(),
             [],
         );
+
         assert.deepEqual(
             board.get_uci_moves(),
             ["a2a3",],
@@ -979,7 +1242,14 @@ test(
         board.set_options({ interaction: { can_premove: true, }, },);
 
         for (let index = 0; index < 32; index++) {
-            const input = index % 2 === 0 ? { from: "g8", to: "f6", } : { from: "f6", to: "g8", };
+            const input = index % 2 === 0 ? {
+                from: "g8",
+                to: "f6",
+            } : {
+                from: "f6",
+                to: "g8",
+            };
+
             assert.equal(
                 board.set_premove(input,),
                 true,
@@ -987,14 +1257,20 @@ test(
         }
 
         assert.equal(
-            board.set_premove({ from: "g8", to: "f6", },),
+            board.set_premove({
+                from: "g8",
+                to: "f6",
+            },),
             false,
         );
+
         assert.equal(
             board.get_premoves().length,
             32,
         );
+
         board.set_premove(null,);
+
         assert.deepEqual(
             board.get_premoves(),
             [],
@@ -1008,20 +1284,34 @@ test(
         const board = create_board();
         board.set_options({ interaction: { can_premove: true, }, },);
         board.set_position("4k3/4r3/8/8/8/8/8/K3R3 w - - 0 1",);
+
         assert.equal(
-            board.set_premove({ from: "e7", to: "d7", },),
+            board.set_premove({
+                from: "e7",
+                to: "d7",
+            },),
             false,
         );
+
         assert.equal(
-            board.set_premove({ from: "e7", to: "e6", },),
+            board.set_premove({
+                from: "e7",
+                to: "e6",
+            },),
             true,
         );
+
         board.set_premove(null,);
         board.set_position("4k3/8/8/8/8/8/8/K2R4 w - - 0 1",);
+
         assert.equal(
-            board.set_premove({ from: "e8", to: "d8", },),
+            board.set_premove({
+                from: "e8",
+                to: "d8",
+            },),
             false,
         );
+
         board.remove();
     },
 );
@@ -1030,24 +1320,37 @@ test(
     "Premoves are disabled by default and can be explicitly enabled.",
     () => {
         const board = create_board();
+
         assert.equal(
             board.get_options().interaction.can_premove,
             false,
         );
+
         assert.equal(
-            board.set_premove({ from: "e7", to: "e5", },),
+            board.set_premove({
+                from: "e7",
+                to: "e5",
+            },),
             false,
         );
+
         board.set_options({ interaction: { can_premove: true, }, },);
+
         assert.equal(
-            board.set_premove({ from: "e7", to: "e5", },),
+            board.set_premove({
+                from: "e7",
+                to: "e5",
+            },),
             true,
         );
+
         board.set_options({ interaction: { can_premove: false, }, },);
+
         assert.deepEqual(
             board.get_premoves(),
             [],
         );
+
         board.remove();
     },
 );

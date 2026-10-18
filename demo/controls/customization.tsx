@@ -1,6 +1,7 @@
 import { useEffect, useState, } from "react";
 
 import type { ChessboardOptions, ResolvedChessboardOptions, } from "../../src/core";
+
 import { Button, } from "../component/button";
 import { Label, } from "../component/label";
 import { Textarea, } from "../component/textarea";
@@ -32,9 +33,11 @@ export function CustomizationControls() {
             let is_active = true;
             const board = document.querySelector("chess-board",);
             const update = () => set_options(board!.get_options(),);
+
             void customElements.whenDefined("chess-board",).then(() => {
                 if (is_active && board) {
                     update();
+
                     board.addEventListener(
                         "chessboard:change",
                         update,
@@ -44,6 +47,7 @@ export function CustomizationControls() {
 
             return () => {
                 is_active = false;
+
                 board?.removeEventListener(
                     "chessboard:change",
                     update,
@@ -130,7 +134,12 @@ export function CustomizationControls() {
             <h3 className="font-medium">Configuration examples</h3>
             <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={() => update_options({ renderers: { square_overlay: (context,) => context.square === "e4" ? "Target" : null, }, },)}>Show square overlay</Button>
-                <Button type="button" variant="outline" onClick={() => update_options({ promotion: { mode: "automatic", default_piece: "n", }, },)}>Promote to knight</Button>
+                <Button type="button" variant="outline" onClick={() => update_options({
+                    promotion: {
+                        mode: "automatic",
+                        default_piece: "n",
+                    },
+                },)}>Promote to knight</Button>
                 <Button type="button" variant="outline" onClick={() => {
                     document.querySelector("chess-board",)!.reset_options();
                     show_message("Settings restored to defaults.",);

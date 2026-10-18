@@ -19,7 +19,9 @@ test(
                 `../../asset/audio/${name}.mp3`,
                 import.meta.url,
             ),);
+
             const actual_hash = createHash("sha256",).update(recording,).digest("hex",);
+
             assert.equal(
                 actual_hash,
                 expected_hash,

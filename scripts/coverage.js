@@ -6,14 +6,17 @@ const PACKAGE_DIRECTORY = fileURLToPath(new URL(
     "../",
     import.meta.url,
 ),);
+
 const COVERAGE_DIRECTORY = new URL(
     "../coverage/",
     import.meta.url,
 );
+
 await mkdir(
     COVERAGE_DIRECTORY,
     { recursive: true, },
 );
+
 const tests = [];
 
 for (const directory of ["test/unit", "test/integration",]) {
@@ -39,7 +42,10 @@ const execution = spawnSync(
         "--test-reporter-destination=coverage/lcov.info",
         ...tests.sort(),
     ],
-    { cwd: PACKAGE_DIRECTORY, stdio: "inherit", },
+    {
+        cwd: PACKAGE_DIRECTORY,
+        stdio: "inherit",
+    },
 );
 
 if (execution.error) {
@@ -57,7 +63,15 @@ const report = await readFile(
     ),
     "utf8",
 );
-const counts = { LF: 0, LH: 0, FNF: 0, FNH: 0, BRF: 0, BRH: 0, };
+
+const counts = {
+    LF: 0,
+    LH: 0,
+    FNF: 0,
+    FNH: 0,
+    BRF: 0,
+    BRH: 0,
+};
 
 for (const line of report.split("\n",)) {
     const [key, count,] = line.split(":",);
@@ -81,6 +95,7 @@ const transcript = await readFile(
     ),
     "utf8",
 );
+
 const passed_count = Number(transcript.match(/^# pass (\d+)$/m,)?.[1],);
 
 if (!Number.isFinite(passed_count,)) {
@@ -97,6 +112,7 @@ const summary = {
     function_percent: Number((counts.FNH / counts.FNF * 100).toFixed(2,),),
     counts,
 };
+
 await writeFile(
     new URL(
         "summary.json",
@@ -108,10 +124,12 @@ await writeFile(
         4,
     )}\n`,
 );
+
 const readme_url = new URL(
     "../README.md",
     import.meta.url,
 );
+
 let readme = await readFile(
     readme_url,
     "utf8",
@@ -138,4 +156,5 @@ await writeFile(
     readme_url,
     readme,
 );
+
 console.log(`Passed ${passed_count} tests. Library line coverage is ${summary.line_percent}% (branches ${summary.branch_percent}%, functions ${summary.function_percent}%).`,);

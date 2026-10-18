@@ -1,6 +1,7 @@
 import type { Color, PieceSymbol, } from "chess.js";
 
 import type { CapturedPieceDisplay, } from "../api/types.js";
+
 import { type RulesGame, } from "../chess/rules.js";
 import { type BoardLabels, DEFAULT_LABELS, type MaterialContext, } from "../configuration/options.js";
 import { create_piece_art, get_promotion_name, } from "./pieces.js";
@@ -16,10 +17,12 @@ const PIECE_POINTS: Record<
     q: 9,
     k: 0,
 };
+
 const MATERIAL_SIGNATURES = new WeakMap<
     HTMLElement,
     string
 >();
+
 const CAPTURE_ORDER: PieceSymbol[] = ["p", "n", "b", "r", "q",];
 
 type MaterialSummary = {
@@ -43,6 +46,7 @@ export function render_material_rows(
     presentation?: {
         labels: BoardLabels;
         render: ((context: MaterialContext,) => Node | string) | null;
+
         render_content: (
             render: () => Node | string,
             fallback: Node | string,
@@ -58,6 +62,7 @@ export function render_material_rows(
             points: 0,
             captures: captures.w,
         },
+
         b: {
             piece_count: 0,
             points: 0,
@@ -80,7 +85,14 @@ export function render_material_rows(
         const difference = summary.points - summaries[opponent].points;
         const labels = presentation?.labels ?? DEFAULT_LABELS;
         const color_name = color === "w" ? labels.white : labels.black;
-        const context = { ...summary, captures: [...summary.captures,], color, difference, };
+
+        const context = {
+            ...summary,
+            captures: [...summary.captures,],
+            color,
+            difference,
+        };
+
         const point_unit = summary.points === 1 ? "point" : "points";
         const difference_unit = Math.abs(difference,) === 1 ? "point" : "points";
         const row = rows[color];
@@ -94,17 +106,22 @@ export function render_material_rows(
             row,
             signature,
         );
+
         row.className = "material_row";
+
         row.setAttribute(
             "part",
             "material",
         );
+
         row.dataset.color = color;
         row.dataset.capture_display = display;
+
         row.setAttribute(
             "role",
             "group",
         );
+
         row.setAttribute(
             "aria-label",
             labels.format_material_label(
@@ -130,20 +147,24 @@ export function render_material_rows(
 
             const group = document.createElement("span",);
             group.className = "capture_group";
+
             const description = labels.format_capture(
                 opponent,
                 type,
                 count,
                 `${count} captured ${opponent === "w" ? "white" : "black"} ${get_promotion_name(type,)}${count === 1 ? "" : "s"}`,
             );
+
             group.setAttribute(
                 "role",
                 "img",
             );
+
             group.setAttribute(
                 "aria-label",
                 description,
             );
+
             group.title = description;
             const artwork_count = display === "stacked" ? count : 1;
 
@@ -155,10 +176,12 @@ export function render_material_rows(
                     },
                     sprite_url,
                 );
+
                 artwork.setAttribute(
                     "aria-hidden",
                     "true",
                 );
+
                 group.append(artwork,);
             }
 
@@ -166,10 +189,12 @@ export function render_material_rows(
                 const quantity = document.createElement("span",);
                 quantity.className = "capture_quantity";
                 quantity.textContent = String(count,);
+
                 quantity.setAttribute(
                     "aria-hidden",
                     "true",
                 );
+
                 group.append(quantity,);
             }
 
@@ -189,6 +214,7 @@ export function render_material_rows(
         advantage.className = "material_advantage";
         advantage.dataset.state = difference > 0 ? "ahead" : difference < 0 ? "behind" : "equal";
         advantage.textContent = difference > 0 ? `+${difference}` : difference < 0 ? `−${Math.abs(difference,)}` : "=";
+
         advantage.title = labels.format_advantage(
             difference,
             difference === 0 ? "Equal material." : `${Math.abs(difference,)} material ${difference_unit} ${difference > 0 ? "ahead" : "behind"}.`,
@@ -199,6 +225,7 @@ export function render_material_rows(
                 () => presentation.render!(context,),
                 inventory,
             );
+
             row.replaceChildren(rendered,);
             continue;
         }

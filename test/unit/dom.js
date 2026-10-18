@@ -5,6 +5,7 @@ import { Window, } from "happy-dom";
 export function create_dom_environment() {
     const browser_window = new Window({ url: "http://localhost", },);
     const original_properties = new Map();
+
     const names = [
         "CustomEvent",
         "DOMRect",
@@ -25,7 +26,9 @@ export function create_dom_environment() {
                 name,
             ),
         );
+
         const browser_member = name === "window" ? browser_window : browser_window[name];
+
         Object.defineProperty(
             globalThis,
             name,

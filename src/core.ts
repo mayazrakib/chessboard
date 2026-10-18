@@ -1,18 +1,7 @@
 import type { Square, } from "chess.js";
 
+import type { AnnotationsDetail, BoardMark, ChessboardChangeDetail, ChessboardErrorDetail, ChessboardMoveDetail, ChessboardPositionDetail, ChessboardStatus, MoveInput, MoveRequest, MoveRequestEndDetail, } from "./api/types.js";
 import type { ChessboardElement, } from "./element/chessboard_element.js";
-import type {
-    AnnotationsDetail,
-    BoardMark,
-    ChessboardChangeDetail,
-    ChessboardErrorDetail,
-    ChessboardMoveDetail,
-    ChessboardPositionDetail,
-    ChessboardStatus,
-    MoveInput,
-    MoveRequest,
-    MoveRequestEndDetail,
-} from "./api/types.js";
 
 export { configure_chessboard_assets, } from "./infrastructure/assets.js";
 export { ChessboardElement, define_chessboard, } from "./element/chessboard_element.js";
@@ -64,17 +53,22 @@ declare global {
         "chessboard:move_request_end": CustomEvent<MoveRequestEndDetail>;
         "chessboard:change": CustomEvent<ChessboardChangeDetail>;
         "chessboard:annotations": CustomEvent<AnnotationsDetail>;
+
         "chessboard:ready": CustomEvent<{
             revision: number;
         }>;
+
         "chessboard:animation_complete": CustomEvent<{
             revision: number;
         }>;
+
         "chessboard:move": CustomEvent<ChessboardMoveDetail>;
         "chessboard:position": CustomEvent<ChessboardPositionDetail>;
+
         "chessboard:select": CustomEvent<ChessboardChangeDetail & {
             square: Square | null;
         }>;
+
         "chessboard:marks": CustomEvent<BoardMark[]>;
         "chessboard:premove": CustomEvent<MoveInput | null>;
         "chessboard:error": CustomEvent<ChessboardErrorDetail>;

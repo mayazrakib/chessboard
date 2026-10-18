@@ -58,11 +58,13 @@ export function run_system_benchmark() {
                 () => {
                     for (let index = 0; index < MOVE_COUNT; index++) {
                         const move = MOVES[index % MOVES.length];
+
                         board.move({
                             from: move.slice(
                                 0,
                                 UCI_SQUARE_LENGTH,
                             ),
+
                             to: move.slice(UCI_SQUARE_LENGTH,),
                         },);
                     }

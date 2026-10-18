@@ -7,18 +7,8 @@ import { NativeSelect, NativeSelectOption, } from "../component/native_select";
 import { Separator, } from "../component/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger, } from "../component/tabs";
 import { Textarea, } from "../component/textarea";
-import {
-    ErrorControls,
-    EventInspector,
-    InspectionPanel,
-    LayoutControls,
-    MarkEditor,
-    PgnControls,
-    PositionControls,
-    StyleControls,
-} from "../inspection/inspection_controls";
+import { ErrorControls, EventInspector, InspectionPanel, LayoutControls, MarkEditor, PgnControls, PositionControls, StyleControls, } from "../inspection/inspection_controls";
 import { BoundButton, BoundSlider, BoundSwitch, } from "./control_bindings";
-
 import { CustomizationControls, } from "./customization";
 import { EffectsControls, } from "./effects";
 

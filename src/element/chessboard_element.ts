@@ -1,64 +1,17 @@
 import { type Color, DEFAULT_POSITION, type Move, type Piece, type PieceSymbol, type Square, } from "chess.js";
 
-import { resolve_assets, } from "../infrastructure/assets.js";
-import { BoardAudio, type BoardSound, } from "../media/audio.js";
+import type { Annotation, BoardMark, BoardSquare, BoardTheme, ChangeReason, ChangeSource, ChessboardAssets, ChessboardChangeDetail, ChessboardErrorDetail, ChessboardOptions, ChessboardPositionDetail, ChessboardStatus, DragState, HistoryState, MoveInput, MoveRequest, PieceNode, PromotionRequest, ResolvedChessboardOptions, } from "../api/types.js";
+
+import { type RulesGame, type RulesProvider, STANDARD_RULES_PROVIDER, } from "../chess/rules.js";
+import { format_uci_move, parse_uci_move, } from "../chess/uci.js";
 import { matches_shortcut, resolve_customization, } from "../configuration/options.js";
 import { validate_annotation, validate_options, } from "../configuration/validation.js";
+import { resolve_assets, } from "../infrastructure/assets.js";
+import { DRAG_RESPONSE_MS, DRAG_SCALE, DRAG_SCALE_THRESHOLD, MOVE_EASING, advance_drag_spring, create_move_keyframes, get_drag_tilt_degrees, } from "../interaction/motion.js";
+import { BoardAudio, type BoardSound, } from "../media/audio.js";
 import { render_material_rows, } from "../rendering/material.js";
-import {
-    advance_drag_spring,
-    create_move_keyframes,
-    DRAG_RESPONSE_MS,
-    DRAG_SCALE,
-    DRAG_SCALE_THRESHOLD,
-    get_drag_tilt_degrees,
-    MOVE_EASING,
-} from "../interaction/motion.js";
 import { create_piece_art, get_piece_name, get_promotion_name, is_point_over_piece, } from "../rendering/pieces.js";
-import { type RulesGame, type RulesProvider, STANDARD_RULES_PROVIDER, } from "../chess/rules.js";
-import type {
-    Annotation,
-    BoardMark,
-    BoardSquare,
-    BoardTheme,
-    ChangeReason,
-    ChangeSource,
-    ChessboardAssets,
-    ChessboardChangeDetail,
-    ChessboardErrorDetail,
-    ChessboardOptions,
-    ChessboardPositionDetail,
-    ChessboardStatus,
-    DragState,
-    HistoryState,
-    MoveInput,
-    MoveRequest,
-    PieceNode,
-    PromotionRequest,
-    ResolvedChessboardOptions,
-} from "../api/types.js";
-import { format_uci_move, parse_uci_move, } from "../chess/uci.js";
-import {
-    BOARD_SIZE,
-    DEFAULT_ANIMATION_DURATION_MS,
-    DEFAULT_FRAME_DURATION_MS,
-    DEFAULT_OPTIONS,
-    DRAG_MAXIMUM_LAG_SQUARES,
-    DRAG_OFFSET_SETTLE_THRESHOLD_PX,
-    DRAG_VELOCITY_SETTLE_THRESHOLD_PX_PER_SECOND,
-    ERROR_OPERATIONS,
-    FILES,
-    HINT_DURATION_MS,
-    LAST_FILE_INDEX,
-    MAXIMUM_PREMOVES,
-    PROMOTION_DURATION_MS,
-    RETURN_DURATION_MS,
-    STATE_DURATION_MS,
-    SVG_NAMESPACE,
-    THEMES,
-    TILT_RESPONSE_TIME_CONSTANT,
-    TILT_SETTLE_THRESHOLD_DEGREES,
-} from "./constants.js";
+import { BOARD_SIZE, DEFAULT_ANIMATION_DURATION_MS, DEFAULT_FRAME_DURATION_MS, DEFAULT_OPTIONS, DRAG_MAXIMUM_LAG_SQUARES, DRAG_OFFSET_SETTLE_THRESHOLD_PX, DRAG_VELOCITY_SETTLE_THRESHOLD_PX_PER_SECOND, ERROR_OPERATIONS, FILES, HINT_DURATION_MS, LAST_FILE_INDEX, MAXIMUM_PREMOVES, PROMOTION_DURATION_MS, RETURN_DURATION_MS, STATE_DURATION_MS, SVG_NAMESPACE, THEMES, TILT_RESPONSE_TIME_CONSTANT, TILT_SETTLE_THRESHOLD_DEGREES, } from "./constants.js";
 
 const HtmlElementBase = (globalThis.HTMLElement ?? class { }) as typeof HTMLElement;
 
@@ -71,24 +24,35 @@ export class ChessboardElement extends HtmlElementBase {
     private request_sequence = 0;
     private pending_request: MoveRequest | null = null;
     private interaction_source: ChangeSource = "api";
-    private change_context: ChessboardChangeDetail = { revision: 0, reason: "position loaded", source: "system", };
+
+    private change_context: ChessboardChangeDetail = {
+        revision: 0,
+        reason: "position loaded",
+        source: "system",
+    };
+
     private assets = resolve_assets({},);
     private readonly stylesheet = document.createElement("link",);
     private stylesheet_state: "pending" | "loaded" | "failed" = "pending";
+
     private readonly ready_waiters: {
         resolve: () => void;
         reject: (error: Error,) => void;
     }[] = [];
+
     private readonly active_animations = new Set<Animation>();
     private animation_notification = 0;
+
     private readonly legal_moves_cache = new Map<
         Square,
         Move[]
     >();
+
     private readonly square_signatures = new Map<
         Square,
         string
     >();
+
     private readonly shape_nodes = new Map<
         string,
         {
@@ -96,30 +60,41 @@ export class ChessboardElement extends HtmlElementBase {
             node: SVGGElement;
         }
     >();
+
     private annotation_sequence = 0;
     private annotations: Annotation[] = [];
+
     private captured_pieces: Record<
         Color,
         PieceSymbol[]
-    > = { w: [], b: [], };
+    > = {
+            w: [],
+            b: [],
+        };
+
     private material_revision = -1;
     private material_display = "";
     private rules_provider: RulesProvider = STANDARD_RULES_PROVIDER;
     private game: RulesGame = this.create_game();
+
     private recorded_moves: Pick<
         Move,
         "from" | "to" | "promotion" | "before" | "after" | "color" | "captured"
     >[] = [];
+
     private cached_pgn: string | null = null;
     private cached_status: ChessboardStatus | null = null;
+
     private readonly squares = new Map<
         Square,
         BoardSquare
     >();
+
     private readonly pieces = new Map<
         Square,
         PieceNode
     >();
+
     private readonly redo_moves: MoveInput[] = [];
     private readonly shadow = this.attachShadow({ mode: "open", },);
     private readonly board_surface = document.createElement("div",);
@@ -127,25 +102,31 @@ export class ChessboardElement extends HtmlElementBase {
     private readonly announcer = document.createElement("div",);
     private announcement_sequence = 0;
     private is_checkmate_displayed = false;
+
     private readonly material_rows = {
         w: document.createElement("div",),
         b: document.createElement("div",),
     };
+
     private readonly board = document.createElement("div",);
+
     private readonly shape_layer = document.createElementNS(
         SVG_NAMESPACE,
         "svg",
     );
+
     private readonly promotion_layer = document.createElement("div",);
     private customization = resolve_customization({},);
     private options: ChessboardOptions = { ...DEFAULT_OPTIONS, };
     private marks: BoardMark[] = [];
     private selected_square: Square | null = null;
     private focused_square: Square = "e2";
+
     private last_move: Pick<
         Move,
         "from" | "to"
     > | null = null;
+
     private drag_state: DragState | null = null;
     private drag_ghost: HTMLSpanElement | null = null;
     private drag_target: Square | null = null;
@@ -164,11 +145,13 @@ export class ChessboardElement extends HtmlElementBase {
     private drag_frame_id: number | null = null;
     private drag_pointer: PointerEvent | null = null;
     private processed_drag_pointer: PointerEvent | null = null;
+
     private drag_geometry: {
         rect: DOMRect;
         scale_x: number;
         scale_y: number;
     } | null = null;
+
     private drag_tilt_degrees = 0;
     private drag_offset_x_px = 0;
     private drag_offset_y_px = 0;
@@ -181,6 +164,7 @@ export class ChessboardElement extends HtmlElementBase {
     private drag_return_animation: Animation | null = null;
     private pointer_release_controller: AbortController | null = null;
     private ready_frame_id: number | null = null;
+
     private readonly audio = new BoardAudio(
         this.ownerDocument,
         (error,) => this.emit_error(
@@ -194,6 +178,7 @@ export class ChessboardElement extends HtmlElementBase {
 
         const stylesheet = this.stylesheet;
         stylesheet.rel = "stylesheet";
+
         stylesheet.addEventListener(
             "load",
             () => {
@@ -201,6 +186,7 @@ export class ChessboardElement extends HtmlElementBase {
                 this.schedule_ready_state();
             },
         );
+
         stylesheet.addEventListener(
             "error",
             () => {
@@ -220,65 +206,84 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.board.className = "board";
+
         this.board.setAttribute(
             "part",
             "board",
         );
+
         this.board.setAttribute(
             "role",
             "grid",
         );
+
         this.board.setAttribute(
             "aria-label",
             "Chessboard",
         );
+
         this.shape_layer.classList.add("shapes",);
+
         this.shape_layer.setAttribute(
             "part",
             "annotations",
         );
+
         this.shape_layer.setAttribute(
             "viewBox",
             "0 0 8 8",
         );
+
         this.shape_layer.setAttribute(
             "aria-hidden",
             "true",
         );
+
         this.promotion_layer.className = "promotion_layer";
+
         this.promotion_layer.setAttribute(
             "part",
             "promotion-layer",
         );
+
         this.board_surface.className = "board_surface";
+
         this.board_surface.setAttribute(
             "part",
             "board-surface",
         );
+
         this.celebration_layer.className = "celebration_layer";
+
         this.celebration_layer.setAttribute(
             "aria-hidden",
             "true",
         );
+
         this.announcer.className = "visually_hidden";
+
         this.announcer.setAttribute(
             "role",
             "status",
         );
+
         this.announcer.setAttribute(
             "aria-live",
             "polite",
         );
+
         this.announcer.setAttribute(
             "aria-atomic",
             "true",
         );
+
         this.board_surface.append(
             this.board,
             this.shape_layer,
             this.promotion_layer,
             this.celebration_layer,
         );
+
         this.shadow.append(
             stylesheet,
             this.material_rows.b,
@@ -286,30 +291,37 @@ export class ChessboardElement extends HtmlElementBase {
             this.material_rows.w,
             this.announcer,
         );
+
         this.addEventListener(
             "pointerdown",
             this.handle_pointer_down,
         );
+
         this.addEventListener(
             "pointermove",
             this.handle_pointer_move,
         );
+
         this.addEventListener(
             "pointerup",
             this.handle_pointer_up,
         );
+
         this.addEventListener(
             "pointercancel",
             this.handle_pointer_cancel,
         );
+
         this.board.addEventListener(
             "lostpointercapture",
             this.handle_pointer_cancel,
         );
+
         this.addEventListener(
             "keydown",
             this.handle_key_down,
         );
+
         this.addEventListener(
             "contextmenu",
             this.handle_context_menu,
@@ -324,11 +336,13 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.render_position();
+
         this.ownerDocument.addEventListener(
             "scroll",
             this.invalidate_drag_geometry,
             true,
         );
+
         this.ownerDocument.defaultView?.addEventListener(
             "resize",
             this.invalidate_drag_geometry,
@@ -344,6 +358,7 @@ export class ChessboardElement extends HtmlElementBase {
                 this.cancel_piece_animations();
                 this.invalidate_drag_geometry();
             },);
+
             this.resize_observer.observe(this.board,);
         }
     }
@@ -368,7 +383,11 @@ export class ChessboardElement extends HtmlElementBase {
 
                 this.dispatchEvent(new CustomEvent(
                     "chessboard:ready",
-                    { detail: { revision: this.revision, }, bubbles: true, composed: true, },
+                    {
+                        detail: { revision: this.revision, },
+                        bubbles: true,
+                        composed: true,
+                    },
                 ),);
             },);
         },);
@@ -382,11 +401,13 @@ export class ChessboardElement extends HtmlElementBase {
         this.is_checkmate_displayed = false;
         this.board.classList.remove("ready",);
         this.end_move_request("rejected",);
+
         this.ownerDocument.removeEventListener(
             "scroll",
             this.invalidate_drag_geometry,
             true,
         );
+
         this.ownerDocument.defaultView?.removeEventListener(
             "resize",
             this.invalidate_drag_geometry,
@@ -447,7 +468,10 @@ export class ChessboardElement extends HtmlElementBase {
             resolve,
             reject,
         ) => {
-            this.ready_waiters.push({ resolve, reject, },);
+            this.ready_waiters.push({
+                resolve,
+                reject,
+            },);
         },);
     }
 
@@ -471,7 +495,10 @@ export class ChessboardElement extends HtmlElementBase {
     }
 
     get_pending_move(): MoveRequest | null {
-        return this.pending_request ? { ...this.pending_request, input: { ...this.pending_request.input, }, } : null;
+        return this.pending_request ? {
+            ...this.pending_request,
+            input: { ...this.pending_request.input, },
+        } : null;
     }
 
     request_move(
@@ -490,7 +517,14 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.end_move_request("rejected",);
-        const request: MoveRequest = { id: ++this.request_sequence, revision: this.revision, input: { ...input, }, source, };
+
+        const request: MoveRequest = {
+            id: ++this.request_sequence,
+            revision: this.revision,
+            input: { ...input, },
+            source,
+        };
+
         this.pending_request = request;
         const move_origin = this.move_origin;
         this.reset_interaction();
@@ -500,10 +534,17 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.move_origin = move_origin;
+
         const event = new CustomEvent(
             "chessboard:move_request",
-            { detail: this.get_pending_move()!, bubbles: true, composed: true, cancelable: true, },
+            {
+                detail: this.get_pending_move()!,
+                bubbles: true,
+                composed: true,
+                cancelable: true,
+            },
         );
+
         this.dispatchEvent(event,);
 
         if (this.pending_request?.id === request.id && this.options.move_mode === "automatic" && !event.defaultPrevented) {
@@ -516,7 +557,10 @@ export class ChessboardElement extends HtmlElementBase {
             }
         }
 
-        return { ...request, input: { ...request.input, }, };
+        return {
+            ...request,
+            input: { ...request.input, },
+        };
     }
 
     commit_move(request_id: number,): Move | null {
@@ -533,10 +577,12 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.pending_request = null;
+
         const move = this.apply_move(
             request.input,
             request.source,
         );
+
         this.emit_request_end(
             request,
             move ? "committed" : "rejected",
@@ -561,7 +607,12 @@ export class ChessboardElement extends HtmlElementBase {
 
     set_assets(assets: ChessboardAssets,): void {
         const previous_stylesheet = this.assets.stylesheet_url;
-        const resolved_assets = resolve_assets({ ...this.assets, ...assets, },);
+
+        const resolved_assets = resolve_assets({
+            ...this.assets,
+            ...assets,
+        },);
+
         this.reset_interaction();
         this.cancel_piece_animations();
         this.assets = resolved_assets;
@@ -584,6 +635,7 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.material_revision = -1;
         this.render_position();
+
         this.emit_change(
             "assets changed",
             "api",
@@ -638,7 +690,11 @@ export class ChessboardElement extends HtmlElementBase {
         let moves = this.legal_moves_cache.get(square,);
 
         if (!moves) {
-            moves = this.game.moves({ square, verbose: true, },);
+            moves = this.game.moves({
+                square,
+                verbose: true,
+            },);
+
             this.legal_moves_cache.set(
                 square,
                 moves,
@@ -670,10 +726,15 @@ export class ChessboardElement extends HtmlElementBase {
 
     get_options(): ResolvedChessboardOptions {
         return {
-            ...DEFAULT_OPTIONS, ...this.options, ...resolve_customization(
+            ...DEFAULT_OPTIONS,
+            ...this.options,
+
+            ...resolve_customization(
                 {},
                 this.customization,
-            ), assets: this.get_assets(),
+            ),
+
+            assets: this.get_assets(),
         };
     }
 
@@ -705,7 +766,10 @@ export class ChessboardElement extends HtmlElementBase {
         if (!this.is_muted() && settings.enabled[sound] && settings[`should_play_on_${category}`]) {
             this.audio.play(
                 sound,
-                { volume: settings.volume, url: settings.urls[sound], },
+                {
+                    volume: settings.volume,
+                    url: settings.urls[sound],
+                },
             );
         }
     }
@@ -719,10 +783,12 @@ export class ChessboardElement extends HtmlElementBase {
     ): void {
         const status = this.get_status();
         const player_color = this.customization.sound.player_color;
+
         const sound: BoardSound = status.is_checkmate ? (player_color ? (status.turn === player_color ? "lose" : "win") : "checkmate")
             : status.is_draw ? "draw"
                 : status.is_check ? "check"
                     : move.captured ? "capture" : "move";
+
         this.play_sound(
             sound,
             category,
@@ -757,7 +823,10 @@ export class ChessboardElement extends HtmlElementBase {
                 return false;
             }
 
-            const legal_moves = this.get_premove_game(piece.color,).moves({ square: input.from, verbose: true, },);
+            const legal_moves = this.get_premove_game(piece.color,).moves({
+                square: input.from,
+                verbose: true,
+            },);
 
             if (!legal_moves.some((move,) => move.to === input.to && (move.promotion ? move.promotion === (input.promotion ?? "q") : !input.promotion),)) {
                 return false;
@@ -798,6 +867,7 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.render_position();
+
         this.dispatchEvent(new CustomEvent(
             "chessboard:premove",
             {
@@ -815,6 +885,7 @@ export class ChessboardElement extends HtmlElementBase {
 
     private get_premove_game(color: Color,): RulesGame {
         let game = this.game;
+
         const set_turn = (): void => {
             const fields = game.fen().split(" ",);
 
@@ -825,16 +896,25 @@ export class ChessboardElement extends HtmlElementBase {
 
             game = this.create_game(fields.join(" ",),);
         };
+
         set_turn();
 
         for (const input of this.premoves) {
-            const move = game.moves({ square: input.from, verbose: true, },).find((candidate,) => candidate.to === input.to && (!candidate.promotion || candidate.promotion === (input.promotion ?? "q")),);
+            const move = game.moves({
+                square: input.from,
+                verbose: true,
+            },).find((candidate,) => candidate.to === input.to && (!candidate.promotion || candidate.promotion === (input.promotion ?? "q")),);
 
             if (!move) {
                 break;
             }
 
-            game.move({ from: move.from, to: move.to, promotion: move.promotion, },);
+            game.move({
+                from: move.from,
+                to: move.to,
+                promotion: move.promotion,
+            },);
+
             set_turn();
         }
 
@@ -849,6 +929,7 @@ export class ChessboardElement extends HtmlElementBase {
             Square,
             Piece
         >();
+
         const game = this.premoves.length && this.queued_premove_color && this.queued_premove_color !== this.game.turn()
             ? this.get_premove_game(this.queued_premove_color,)
             : this.game;
@@ -869,10 +950,12 @@ export class ChessboardElement extends HtmlElementBase {
 
     set_options(options: ChessboardOptions,): void {
         validate_options(options,);
+
         const customization = resolve_customization(
             options,
             this.customization,
         );
+
         const previous_options = this.options;
         const should_restore_position = Boolean(this.promotion_request || this.drag_state || (options.animation_duration === 0 && this.selected_square),);
 
@@ -897,6 +980,7 @@ export class ChessboardElement extends HtmlElementBase {
             ...this.options,
             ...options,
         };
+
         this.customization = customization;
 
         if (!customization.interaction.can_premove && this.premove) {
@@ -907,10 +991,12 @@ export class ChessboardElement extends HtmlElementBase {
             "aria-label",
             customization.labels.board,
         );
+
         this.board.style.setProperty(
             "--chessboard-piece-scale",
             String(customization.pieces.scale,),
         );
+
         this.board.style.setProperty(
             "--chessboard-piece-padding",
             `${customization.pieces.padding_px}px`,
@@ -926,6 +1012,7 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         const duration_ms = this.options.animation_duration;
+
         this.options.animation_duration = typeof duration_ms === "number" && Number.isFinite(duration_ms,) ? Math.max(
             0,
             duration_ms,
@@ -1018,10 +1105,12 @@ export class ChessboardElement extends HtmlElementBase {
         this.cancel_piece_animations();
         this.rules_provider = { create_game: provider.create_game.bind(provider,), };
         this.game = game;
+
         this.begin_position_change(
             "position loaded",
             "api",
         );
+
         this.cached_pgn = null;
         this.cached_status = null;
         this.recorded_moves = game.history({ verbose: true, },);
@@ -1051,10 +1140,12 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.cancel_piece_animations();
         this.game = game;
+
         this.begin_position_change(
             "position loaded",
             "api",
         );
+
         this.cached_pgn = null;
         this.cached_status = null;
         this.recorded_moves = game.history({ verbose: true, },);
@@ -1086,10 +1177,12 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.cancel_piece_animations();
         this.game = game;
+
         this.begin_position_change(
             "game loaded",
             "api",
         );
+
         this.cached_pgn = null;
         this.cached_status = null;
         this.recorded_moves = game.history({ verbose: true, },);
@@ -1099,10 +1192,12 @@ export class ChessboardElement extends HtmlElementBase {
 
         const history = this.recorded_moves;
         const previous_move = history[history.length - 1];
+
         this.last_move = previous_move ? {
             from: previous_move.from,
             to: previous_move.to,
         } : null;
+
         this.render_position();
         this.emit_position();
         this.execute_premove();
@@ -1135,6 +1230,7 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         this.redo_moves.length = 0;
+
         this.finish_move(
             move,
             "move",
@@ -1177,6 +1273,7 @@ export class ChessboardElement extends HtmlElementBase {
             "undo",
             source,
         );
+
         this.recorded_moves.pop();
 
         if (move.captured) {
@@ -1201,19 +1298,24 @@ export class ChessboardElement extends HtmlElementBase {
         },);
 
         const previous_move = this.recorded_moves[this.recorded_moves.length - 1];
+
         this.last_move = previous_move ? {
             from: previous_move.from,
             to: previous_move.to,
         } : null;
+
         this.reset_interaction();
+
         this.render_position(
             move,
             true,
         );
+
         this.play_sound(
             "move",
             "history",
         );
+
         this.emit_position();
 
         return move;
@@ -1227,6 +1329,7 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         const move = this.game.move(input,);
+
         this.finish_move(
             move,
             "redo",
@@ -1255,6 +1358,7 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         const identifiers = new Set<string>();
+
         const normalized = annotations.map((annotation,) => {
             validate_annotation(annotation,);
             const previous = this.annotations.find((candidate,) => candidate.from === annotation.from && candidate.to === annotation.to && candidate.group === (group ?? annotation.group ?? annotation.source ?? "user"),);
@@ -1274,8 +1378,13 @@ export class ChessboardElement extends HtmlElementBase {
 
             identifiers.add(id,);
 
-            return { ...annotation, id, group: group ?? annotation.group ?? annotation.source ?? "user", };
+            return {
+                ...annotation,
+                id,
+                group: group ?? annotation.group ?? annotation.source ?? "user",
+            };
         },);
+
         const retained = group === undefined ? [] : this.annotations.filter((annotation,) => annotation.group !== group,);
 
         if (retained.some((annotation,) => identifiers.has(annotation.id,),)) {
@@ -1292,15 +1401,29 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.dispatchEvent(new CustomEvent(
             "chessboard:marks",
-            { detail: this.get_marks(), bubbles: true, composed: true, },
+            {
+                detail: this.get_marks(),
+                bubbles: true,
+                composed: true,
+            },
         ),);
+
         const detail = this.emit_change(
             "annotations changed",
             source,
         );
+
         this.dispatchEvent(new CustomEvent(
             "chessboard:annotations",
-            { detail: { ...detail, annotations: this.get_annotations(), }, bubbles: true, composed: true, },
+            {
+                detail: {
+                    ...detail,
+                    annotations: this.get_annotations(),
+                },
+
+                bubbles: true,
+                composed: true,
+            },
         ),);
     }
 
@@ -1326,7 +1449,11 @@ export class ChessboardElement extends HtmlElementBase {
             return false;
         }
 
-        this.set_annotations(this.annotations.map((annotation,) => annotation.id === id ? { ...annotation, ...changes, id, } : annotation,),);
+        this.set_annotations(this.annotations.map((annotation,) => annotation.id === id ? {
+            ...annotation,
+            ...changes,
+            id,
+        } : annotation,),);
 
         return true;
     }
@@ -1368,6 +1495,7 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.cancel_piece_animations();
         this.reset_interaction();
+
         this.set_premove(
             null,
             "replay",
@@ -1376,7 +1504,12 @@ export class ChessboardElement extends HtmlElementBase {
         while (this.recorded_moves.length > index) {
             const move = this.game.undo()!;
             this.recorded_moves.pop();
-            this.redo_moves.push({ from: move.from, to: move.to, promotion: move.promotion, },);
+
+            this.redo_moves.push({
+                from: move.from,
+                to: move.to,
+                promotion: move.promotion,
+            },);
         }
 
         while (this.recorded_moves.length < index) {
@@ -1388,6 +1521,7 @@ export class ChessboardElement extends HtmlElementBase {
             "replay seek",
             "replay",
         );
+
         this.rebuild_captures();
         this.last_move = this.recorded_moves[this.recorded_moves.length - 1] ?? null;
         this.render_position();
@@ -1439,17 +1573,21 @@ export class ChessboardElement extends HtmlElementBase {
             0,
             this.options.animation_duration ?? 0,
         );
+
         const quality_profile = this.options.quality_profile ?? DEFAULT_OPTIONS.quality_profile;
         const duration_ms = quality_profile === "minimal" ? 0 : configured_duration_ms;
         this.dataset.qualityProfile = quality_profile;
+
         this.board.classList.toggle(
             "motion_disabled",
             duration_ms === 0,
         );
+
         this.style.setProperty(
             "--chessboard-animation-duration",
             `${duration_ms}ms`,
         );
+
         this.style.setProperty(
             "--chessboard-state-duration",
             `${Math.min(
@@ -1457,6 +1595,7 @@ export class ChessboardElement extends HtmlElementBase {
                 duration_ms,
             )}ms`,
         );
+
         this.style.setProperty(
             "--chessboard-hint-duration",
             `${Math.min(
@@ -1475,57 +1614,72 @@ export class ChessboardElement extends HtmlElementBase {
                 const button = document.createElement("button",) as BoardSquare;
                 button.type = "button";
                 button.className = "square";
+
                 button.setAttribute(
                     "part",
                     "square",
                 );
+
                 button.square_name = square;
                 button.dataset.square = square;
+
                 button.setAttribute(
                     "role",
                     "gridcell",
                 );
+
                 button.tabIndex = square === this.focused_square ? 0 : -1;
 
                 const hint = document.createElement("span",);
                 hint.className = "hint";
+
                 hint.setAttribute(
                     "part",
                     "hint",
                 );
+
                 hint.setAttribute(
                     "aria-hidden",
                     "true",
                 );
+
                 const focus_ring = document.createElement("span",);
                 focus_ring.className = "square_focus";
+
                 focus_ring.setAttribute(
                     "part",
                     "square-focus",
                 );
+
                 focus_ring.setAttribute(
                     "aria-hidden",
                     "true",
                 );
+
                 const status_ring = document.createElement("span",);
                 status_ring.className = "square_status";
+
                 status_ring.setAttribute(
                     "part",
                     "square-status",
                 );
+
                 status_ring.setAttribute(
                     "aria-hidden",
                     "true",
                 );
+
                 button.append(
                     hint,
                     focus_ring,
                     status_ring,
                 );
+
                 this.squares.set(
                     square,
                     button,
                 );
+
                 fragment.append(button,);
             }
         }
@@ -1550,24 +1704,29 @@ export class ChessboardElement extends HtmlElementBase {
                 particle.style.backgroundColor = colors[index % colors.length]!;
                 particle.style.animationDelay = `${(index % 8) * 65}ms`;
                 const drift_cqw = ((index * 13) % 30) - 15;
+
                 particle.style.setProperty(
                     "--confetti-mid-drift",
                     `${drift_cqw}cqw`,
                 );
+
                 particle.style.setProperty(
                     "--confetti-end-drift",
                     `${drift_cqw * -.35}cqw`,
                 );
+
                 particle.addEventListener(
                     "animationend",
                     () => particle.remove(),
                     { once: true, },
                 );
+
                 particle.addEventListener(
                     "animationcancel",
                     () => particle.remove(),
                     { once: true, },
                 );
+
                 fragment.append(particle,);
             }
 
@@ -1583,25 +1742,34 @@ export class ChessboardElement extends HtmlElementBase {
         const preview_position = this.get_premove_position();
         const move_square = this.drag_state?.is_dragging ? this.drag_state.from : this.selected_square;
         const selected_piece = move_square ? preview_position.get(move_square,) : undefined;
+
         const legal_moves = move_square && selected_piece && this.options.show_legal_moves
             ? selected_piece.color === this.game.turn()
                 ? this.get_legal_moves(move_square,)
-                : this.get_premove_game(selected_piece.color,).moves({ square: move_square, verbose: true, },)
+                : this.get_premove_game(selected_piece.color,).moves({
+                    square: move_square,
+                    verbose: true,
+                },)
             : [];
+
         const legal_targets = new Map(legal_moves.map((move,) => [move.to, move.isCapture() || move.isEnPassant(),],),);
+
         this.board.classList.toggle(
             "readonly",
             !this.options.interactive,
         );
+
         this.board.style.touchAction = this.options.interactive ? "none" : "auto";
 
         for (const [square, button,] of this.squares) {
             const piece = this.promotion_request?.to === square
                 ? this.game.get(this.promotion_request.from,)
                 : this.promotion_request?.from === square ? undefined : preview_position.get(square,);
+
             const is_checked = status.is_check && piece?.type === "k" && piece.color === status.turn;
             const is_legal = legal_targets.has(square,);
             const is_capture = legal_targets.get(square,) === true;
+
             const classes: Record<
                 string,
                 boolean
@@ -1616,6 +1784,7 @@ export class ChessboardElement extends HtmlElementBase {
                 legal: is_legal && !is_capture,
                 legal_capture: is_legal && is_capture,
             };
+
             const signature = `${is_black}:${piece?.color ?? ""}${piece?.type ?? ""}:${Object.values(classes,).map(Number,).join("",)}`;
 
             if (this.customization.renderers.square_overlay) {
@@ -1624,14 +1793,17 @@ export class ChessboardElement extends HtmlElementBase {
                 if (!overlay) {
                     overlay = this.ownerDocument.createElement("span",);
                     overlay.className = "square_overlay";
+
                     overlay.setAttribute(
                         "part",
                         "square-overlay",
                     );
+
                     overlay.setAttribute(
                         "aria-hidden",
                         "true",
                     );
+
                     button.append(overlay,);
                 }
 
@@ -1644,6 +1816,7 @@ export class ChessboardElement extends HtmlElementBase {
                     },),
                     "",
                 );
+
                 overlay.replaceChildren(rendered,);
             } else {
                 button.querySelector(".square_overlay",)?.remove();
@@ -1657,16 +1830,19 @@ export class ChessboardElement extends HtmlElementBase {
                 square,
                 signature,
             );
+
             const file_index = FILES.indexOf(square[0] ?? "",);
             const rank = Number(square[1],);
             const column = is_black ? LAST_FILE_INDEX - file_index : file_index;
             const row = is_black ? rank - 1 : BOARD_SIZE - rank;
             button.style.gridColumn = String(column + 1,);
             button.style.gridRow = String(row + 1,);
+
             button.classList.toggle(
                 "dark",
                 (file_index + rank) % 2 !== 0,
             );
+
             button.classList.toggle(
                 "light",
                 (file_index + rank) % 2 === 0,
@@ -1681,6 +1857,7 @@ export class ChessboardElement extends HtmlElementBase {
 
             button.dataset.file_label = row === LAST_FILE_INDEX ? square[0] ?? "" : "";
             button.dataset.rank_label = column === 0 ? square[1] ?? "" : "";
+
             const states = [
                 classes.selected ? "selected" : "",
                 classes.legal ? "legal move" : "",
@@ -1689,7 +1866,9 @@ export class ChessboardElement extends HtmlElementBase {
                 classes.premove_to ? "premove destination" : "",
                 classes.checkmated ? "checkmate" : classes.checked ? "check" : "",
             ].filter(Boolean,);
+
             const default_label = `${square}, ${piece ? get_piece_name(piece,) : "empty"}${states.length ? `, ${states.join(", ",)}` : ""}`;
+
             button.setAttribute(
                 "aria-label",
                 this.format_label(
@@ -1766,6 +1945,7 @@ export class ChessboardElement extends HtmlElementBase {
         if (rook_from && rook_to && rook_piece) {
             this.pieces.delete(rook_from,);
             rook_piece.remove();
+
             this.pieces.set(
                 rook_to,
                 rook_piece,
@@ -1778,14 +1958,17 @@ export class ChessboardElement extends HtmlElementBase {
             if (!node) {
                 node = document.createElement("span",) as PieceNode;
                 node.className = "piece";
+
                 node.setAttribute(
                     "part",
                     "piece",
                 );
+
                 node.setAttribute(
                     "aria-hidden",
                     "true",
                 );
+
                 this.pieces.set(
                     square,
                     node,
@@ -1803,6 +1986,7 @@ export class ChessboardElement extends HtmlElementBase {
                     piece,
                     square,
                 );
+
                 node.replaceChildren(rendered_piece,);
             }
 
@@ -1835,7 +2019,6 @@ export class ChessboardElement extends HtmlElementBase {
                     rook_target,
                 );
             }
-
         }
     }
 
@@ -1880,6 +2063,7 @@ export class ChessboardElement extends HtmlElementBase {
     private announce(message: string,): void {
         const sequence = ++this.announcement_sequence;
         this.announcer.textContent = "";
+
         queueMicrotask(() => {
             if (sequence === this.announcement_sequence && this.isConnected) {
                 this.announcer.textContent = message;
@@ -1913,6 +2097,7 @@ export class ChessboardElement extends HtmlElementBase {
 
         try {
             const settings = this.customization.pieces;
+
             const url = settings.resolve_url?.(
                 { ...piece, },
                 square,
@@ -1964,6 +2149,7 @@ export class ChessboardElement extends HtmlElementBase {
                 {
                     labels: {
                         ...this.customization.labels,
+
                         format_material_label: (
                             context,
                             fallback,
@@ -1974,6 +2160,7 @@ export class ChessboardElement extends HtmlElementBase {
                             ),
                             fallback,
                         ),
+
                         format_capture: (
                             color,
                             piece,
@@ -1988,6 +2175,7 @@ export class ChessboardElement extends HtmlElementBase {
                             ),
                             fallback,
                         ),
+
                         format_advantage: (
                             difference,
                             fallback,
@@ -1998,12 +2186,15 @@ export class ChessboardElement extends HtmlElementBase {
                             ),
                             fallback,
                         ),
+
                         format_material: (context,) => this.format_label(
                             () => this.customization.labels.format_material(context,),
                             `${context.piece_count} pieces · ${context.points} pts`,
                         ),
                     },
+
                     render: this.customization.renderers.material,
+
                     render_content: (
                         render,
                         fallback,
@@ -2013,6 +2204,7 @@ export class ChessboardElement extends HtmlElementBase {
                     ),
                 },
             );
+
             this.material_revision = this.revision;
             this.material_display = display;
         }
@@ -2063,10 +2255,12 @@ export class ChessboardElement extends HtmlElementBase {
         const offset_y_px = ((from_rect.top + (from_rect.height / 2)) - (to_rect.top + (to_rect.height / 2))) * scale_y;
         const initial_scale = from_rect.width / to_rect.width;
         const configured_duration_ms = this.options.animation_duration ?? DEFAULT_ANIMATION_DURATION_MS;
+
         const duration_ms = initial_scale > DRAG_SCALE_THRESHOLD ? Math.min(
             configured_duration_ms,
             RETURN_DURATION_MS,
         ) : configured_duration_ms;
+
         piece.classList.add("moving",);
 
         const animation = this.track_animation(piece.animate(
@@ -2081,6 +2275,7 @@ export class ChessboardElement extends HtmlElementBase {
                 fill: "both",
             },
         ),);
+
         const finish_animation = (): void => {
             animation.cancel();
 
@@ -2088,6 +2283,7 @@ export class ChessboardElement extends HtmlElementBase {
                 piece.classList.remove("moving",);
             }
         };
+
         void animation.finished.then(
             finish_animation,
             finish_animation,
@@ -2127,6 +2323,7 @@ export class ChessboardElement extends HtmlElementBase {
 
         if (!this.drag_geometry) {
             const rect = this.board.getBoundingClientRect();
+
             this.drag_geometry = {
                 rect,
                 scale_x: this.board.clientWidth / rect.width,
@@ -2138,23 +2335,28 @@ export class ChessboardElement extends HtmlElementBase {
         const x = (event.clientX - rect.left - state.grab_offset_x_px) * scale_x;
         const y = (event.clientY - rect.top - state.grab_offset_y_px) * scale_y;
         const can_animate = this.can_animate();
+
         const elapsed_ms = this.drag_frame_timestamp_ms ? Math.max(
             0,
             timestamp_ms - this.drag_frame_timestamp_ms,
         ) : DEFAULT_FRAME_DURATION_MS;
+
         this.drag_frame_timestamp_ms = timestamp_ms;
         let target_tilt_degrees = 0;
 
         if (this.processed_drag_pointer !== event) {
             const pointer_delta_x_px = (event.clientX - this.last_pointer_x_px) * scale_x;
             const pointer_delta_y_px = (event.clientY - this.last_pointer_y_px) * scale_y;
+
             target_tilt_degrees = get_drag_tilt_degrees(
                 event.clientX - this.last_pointer_x_px,
                 event.timeStamp - this.last_pointer_timestamp_ms,
             );
+
             this.drag_offset_x_px -= pointer_delta_x_px;
             this.drag_offset_y_px -= pointer_delta_y_px;
             const maximum_lag_px = this.board.clientWidth / BOARD_SIZE * DRAG_MAXIMUM_LAG_SQUARES;
+
             const lag_distance_px = Math.hypot(
                 this.drag_offset_x_px,
                 this.drag_offset_y_px,
@@ -2181,11 +2383,13 @@ export class ChessboardElement extends HtmlElementBase {
                 this.drag_velocity_x_px_per_second,
                 elapsed_ms,
             );
+
             const vertical_motion = advance_drag_spring(
                 this.drag_offset_y_px,
                 this.drag_velocity_y_px_per_second,
                 elapsed_ms,
             );
+
             this.drag_offset_x_px = horizontal_motion.offset_px;
             this.drag_offset_y_px = vertical_motion.offset_px;
             this.drag_velocity_x_px_per_second = horizontal_motion.velocity_px_per_second;
@@ -2238,6 +2442,7 @@ export class ChessboardElement extends HtmlElementBase {
             event.clientX,
             event.clientY,
         );
+
         const next_target = square && this.drag_state?.legal_targets.has(square,) ? square : null;
 
         if (next_target === this.drag_target) {
@@ -2310,20 +2515,26 @@ export class ChessboardElement extends HtmlElementBase {
             }
 
             existing?.node.remove();
+
             const start = this.get_shape_point(
                 mark.from,
                 is_black,
             );
+
             const color = `var(--chessboard-mark-${mark.color ?? this.customization.annotations.default_color})`;
+
             const shape = document.createElementNS(
                 SVG_NAMESPACE,
                 "g",
             );
+
             shape.setAttribute(
                 "transform",
                 `translate(${start.x} ${start.y})`,
             );
+
             shape.style.color = color;
+
             shape.setAttribute(
                 "part",
                 "annotation",
@@ -2338,28 +2549,35 @@ export class ChessboardElement extends HtmlElementBase {
                     mark.to,
                     is_black,
                 );
+
                 const offset_x_squares = end.x - start.x;
                 const offset_y_squares = end.y - start.y;
+
                 const arrow_length_squares = Math.hypot(
                     offset_x_squares,
                     offset_y_squares,
                 );
+
                 const angle_degrees = Math.atan2(
                     offset_y_squares,
                     offset_x_squares,
                 ) * 180 / Math.PI;
+
                 const shaft_half_width_squares = this.customization.annotations.arrow_width_squares / 2 * (mark.source === "engine" ? 2 / 3 : 1);
                 const head_length_squares = this.customization.annotations.arrow_head_length_squares;
                 const head_half_width_squares = this.customization.annotations.arrow_head_width_squares / 2;
                 const head_base_squares = arrow_length_squares - head_length_squares;
+
                 const arrow = document.createElementNS(
                     SVG_NAMESPACE,
                     "path",
                 );
+
                 arrow.setAttribute(
                     "transform",
                     `rotate(${angle_degrees})`,
                 );
+
                 arrow.setAttribute(
                     "d",
                     `M 0 ${-shaft_half_width_squares}
@@ -2370,22 +2588,27 @@ export class ChessboardElement extends HtmlElementBase {
                     V ${shaft_half_width_squares}
                     H 0 Z`,
                 );
+
                 const is_knight_move = Math.abs(offset_x_squares) * Math.abs(offset_y_squares) === 2
                     && Math.abs(offset_x_squares) + Math.abs(offset_y_squares) === 3;
 
                 if (is_knight_move) {
                     const is_horizontal_first = Math.abs(offset_x_squares) === 2;
+
                     const bend_angle_degrees = is_horizontal_first
                         ? (offset_x_squares > 0 ? 0 : 180)
                         : (offset_y_squares > 0 ? 90 : -90);
+
                     const turn_direction = Math.sign(offset_x_squares * offset_y_squares) * (is_horizontal_first ? 1 : -1);
                     const bend_distance_squares = 2;
                     const final_leg_squares = 1;
                     const bent_head_base_squares = final_leg_squares - head_length_squares;
+
                     arrow.setAttribute(
                         "transform",
                         `rotate(${bend_angle_degrees}) scale(1 ${turn_direction})`,
                     );
+
                     arrow.setAttribute(
                         "d",
                         `M 0 ${-shaft_half_width_squares}
@@ -2404,6 +2627,7 @@ export class ChessboardElement extends HtmlElementBase {
                     "fill",
                     "currentColor",
                 );
+
                 shape.classList.add("arrow_mark",);
                 shape.append(arrow,);
             } else {
@@ -2411,30 +2635,37 @@ export class ChessboardElement extends HtmlElementBase {
                     SVG_NAMESPACE,
                     "rect",
                 );
+
                 tint.setAttribute(
                     "x",
                     "-.39",
                 );
+
                 tint.setAttribute(
                     "y",
                     "-.39",
                 );
+
                 tint.setAttribute(
                     "width",
                     ".78",
                 );
+
                 tint.setAttribute(
                     "height",
                     ".78",
                 );
+
                 tint.setAttribute(
                     "rx",
                     ".06",
                 );
+
                 const corners = document.createElementNS(
                     SVG_NAMESPACE,
                     "path",
                 );
+
                 corners.setAttribute(
                     "d",
                     "M -.15 -.39 H -.33 Q -.39 -.39 -.39 -.33 V -.15 "
@@ -2442,7 +2673,9 @@ export class ChessboardElement extends HtmlElementBase {
                     + "M .39 .15 V .33 Q .39 .39 .33 .39 H .15 "
                     + "M -.39 .15 V .33 Q -.39 .39 -.33 .39 H -.15",
                 );
+
                 shape.classList.add("square_mark",);
+
                 shape.append(
                     tint,
                     corners,
@@ -2456,6 +2689,7 @@ export class ChessboardElement extends HtmlElementBase {
                     SVG_NAMESPACE,
                     "title",
                 );
+
                 title.textContent = mark.label;
                 shape.append(title,);
             }
@@ -2464,10 +2698,15 @@ export class ChessboardElement extends HtmlElementBase {
                 shape,
                 previous_node ? previous_node.nextSibling : this.shape_layer.firstChild,
             );
+
             previous_node = shape;
+
             this.shape_nodes.set(
                 mark.id,
-                { signature, node: shape, },
+                {
+                    signature,
+                    node: shape,
+                },
             );
         }
     }
@@ -2504,12 +2743,14 @@ export class ChessboardElement extends HtmlElementBase {
         const is_annotation_gesture = event.button === 2
             || (event.button === 0 && event.ctrlKey)
             || (event.pointerType === "touch" && this.customization.interaction.touch_mode === "annotate");
+
         const policy = this.customization.annotations;
 
         if (!is_annotation_gesture && event.button === 0 && this.annotations.length > 0 && policy.clear_on_left_click !== "none") {
             const retained = this.annotations.filter((mark,) => policy.clear_on_left_click === "user"
                 ? (mark.source ?? "user") !== "user"
                 : policy.clear_on_left_click === "groups" && !policy.clear_groups.includes(mark.group,),);
+
             this.set_annotations(
                 retained,
                 undefined,
@@ -2539,6 +2780,7 @@ export class ChessboardElement extends HtmlElementBase {
                 is_dragging: false,
                 legal_targets: new Set(),
             };
+
             this.try_set_pointer_capture(event.pointerId,);
             event.preventDefault();
 
@@ -2550,9 +2792,14 @@ export class ChessboardElement extends HtmlElementBase {
         if (piece && this.can_select_piece(piece,)) {
             const piece_node = this.pieces.get(square,);
             const piece_rect = piece_node?.getBoundingClientRect() ?? this.squares.get(square,)?.getBoundingClientRect();
+
             const legal_targets = piece.color === this.game.turn()
                 ? new Set(this.get_legal_moves(square,).map((move,) => move.to,),)
-                : new Set(this.get_premove_game(piece.color,).moves({ square, verbose: true, },).map((move,) => move.to,),);
+                : new Set(this.get_premove_game(piece.color,).moves({
+                    square,
+                    verbose: true,
+                },).map((move,) => move.to,),);
+
             this.drag_state = {
                 from: square,
                 pointer_id: event.pointerId,
@@ -2560,15 +2807,18 @@ export class ChessboardElement extends HtmlElementBase {
                 start_y_px: event.clientY,
                 grab_offset_x_px: piece_rect ? event.clientX - piece_rect.left : 0,
                 grab_offset_y_px: piece_rect ? event.clientY - piece_rect.top : 0,
+
                 can_drag: Boolean(this.customization.interaction.can_drag && piece_node && is_point_over_piece(
                     piece_node,
                     event.clientX,
                     event.clientY,
                 ),),
+
                 is_drawing: false,
                 is_dragging: false,
                 legal_targets,
             };
+
             this.try_set_pointer_capture(event.pointerId,);
         }
     };
@@ -2615,6 +2865,7 @@ export class ChessboardElement extends HtmlElementBase {
             event.preventDefault();
         }
     };
+
     private handle_pointer_up = (event: PointerEvent,): void => {
         const state = this.drag_state;
 
@@ -2671,9 +2922,13 @@ export class ChessboardElement extends HtmlElementBase {
 
                     if (this.get_premove_position().get(state.from,)?.color !== this.game.turn()) {
                         this.set_premove(
-                            { from: state.from, to: square, },
+                            {
+                                from: state.from,
+                                to: square,
+                            },
                             "pointer",
                         );
+
                         this.move_origin = null;
                     } else if (!this.try_move(
                         state.from,
@@ -2715,8 +2970,12 @@ export class ChessboardElement extends HtmlElementBase {
         this.ownerDocument.addEventListener(
             "pointerdown",
             this.handle_pointer_restart,
-            { ...options, capture: true, },
+            {
+                ...options,
+                capture: true,
+            },
         );
+
         this.ownerDocument.defaultView?.addEventListener(
             "blur",
             this.cancel_pointer_release,
@@ -2742,16 +3001,19 @@ export class ChessboardElement extends HtmlElementBase {
             this.handle_pointer_cancel(event,);
         }
     };
+
     private handle_pointer_restart = (event: PointerEvent,): void => {
         if (this.drag_state?.pointer_id === event.pointerId) {
             this.cancel_pointer_release();
         }
     };
+
     private cancel_pointer_release = (): void => {
         this.move_origin = null;
         this.reset_interaction();
         this.render_squares();
     };
+
     private handle_pointer_cancel = (event: PointerEvent,): void => {
         if (this.drag_state?.pointer_id !== event.pointerId) {
             return;
@@ -2776,11 +3038,13 @@ export class ChessboardElement extends HtmlElementBase {
         this.remove_drag_ghost();
         this.render_squares();
     };
+
     private handle_context_menu = (event: MouseEvent,): void => {
         if (this.options.interactive) {
             event.preventDefault();
         }
     };
+
     private handle_key_down = (event: KeyboardEvent,): void => {
         this.interaction_source = "keyboard";
         const target = event.composedPath()[0];
@@ -2820,6 +3084,7 @@ export class ChessboardElement extends HtmlElementBase {
         const file = FILES.indexOf(square[0] ?? "",);
         const rank = Number(square[1],);
         const direction = this.options.orientation === "black" ? -1 : 1;
+
         const next_file = file + (matches_shortcut(
             event,
             shortcuts.right,
@@ -2827,6 +3092,7 @@ export class ChessboardElement extends HtmlElementBase {
             event,
             shortcuts.left,
         ) ? -direction : 0);
+
         const next_rank = rank + (matches_shortcut(
             event,
             shortcuts.up,
@@ -2933,7 +3199,10 @@ export class ChessboardElement extends HtmlElementBase {
             const selected_piece = this.get_premove_position().get(this.selected_square,);
 
             if (selected_piece?.color !== this.game.turn() && this.set_premove(
-                { from: this.selected_square, to: square, },
+                {
+                    from: this.selected_square,
+                    to: square,
+                },
                 this.interaction_source,
             )) {
                 this.selected_square = null;
@@ -2952,10 +3221,17 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.selected_square = piece && this.can_select_piece(piece,) ? square : null;
         this.render_squares();
+
         this.dispatchEvent(new CustomEvent(
             "chessboard:select",
             {
-                detail: { square: this.selected_square, revision: this.revision, reason: "selection changed", source: this.interaction_source, },
+                detail: {
+                    square: this.selected_square,
+                    revision: this.revision,
+                    reason: "selection changed",
+                    source: this.interaction_source,
+                },
+
                 bubbles: true,
                 composed: true,
             },
@@ -3009,8 +3285,12 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.premoves.shift();
         this.publish_premoves("premove",);
+
         this.request_move(
-            { ...input, promotion: legal_move.promotion, },
+            {
+                ...input,
+                promotion: legal_move.promotion,
+            },
             "premove",
         );
     }
@@ -3031,11 +3311,16 @@ export class ChessboardElement extends HtmlElementBase {
                 to,
                 color: this.game.turn(),
             };
+
             const settings = this.customization.promotion;
 
             if (settings.mode === "automatic") {
                 return this.request_move(
-                    { from, to, promotion: settings.default_piece, },
+                    {
+                        from,
+                        to,
+                        promotion: settings.default_piece,
+                    },
                     this.interaction_source,
                 );
             }
@@ -3067,7 +3352,11 @@ export class ChessboardElement extends HtmlElementBase {
                                 }
 
                                 this.request_move(
-                                    { from, to, promotion, },
+                                    {
+                                        from,
+                                        to,
+                                        promotion,
+                                    },
                                     source,
                                 );
                             }
@@ -3076,6 +3365,7 @@ export class ChessboardElement extends HtmlElementBase {
                 } catch (error) {
                     this.reset_interaction();
                     this.render_position();
+
                     this.emit_error(
                         "render_failed",
                         error,
@@ -3089,7 +3379,10 @@ export class ChessboardElement extends HtmlElementBase {
         }
 
         return this.request_move(
-            { from, to, },
+            {
+                from,
+                to,
+            },
             this.interaction_source,
         );
     }
@@ -3119,18 +3412,22 @@ export class ChessboardElement extends HtmlElementBase {
 
         const panel = document.createElement("div",);
         panel.className = "promotion_panel";
+
         panel.setAttribute(
             "part",
             "promotion-panel",
         );
+
         panel.setAttribute(
             "role",
             "dialog",
         );
+
         panel.setAttribute(
             "aria-label",
             this.customization.labels.promotion,
         );
+
         panel.addEventListener(
             "keydown",
             (event,) => {
@@ -3149,10 +3446,12 @@ export class ChessboardElement extends HtmlElementBase {
             const button = document.createElement("button",);
             button.type = "button";
             button.className = "promotion_choice";
+
             button.setAttribute(
                 "part",
                 "promotion-choice",
             );
+
             button.setAttribute(
                 "aria-label",
                 this.format_label(
@@ -3160,29 +3459,44 @@ export class ChessboardElement extends HtmlElementBase {
                     `Promote to ${get_promotion_name(promotion,)}`,
                 ),
             );
-            const piece = { color: request.color, type: promotion, };
+
+            const piece = {
+                color: request.color,
+                type: promotion,
+            };
+
             const artwork = this.render_piece_art(
                 piece,
                 request.to,
             );
+
             button.append(this.customization.renderers.promotion_choice
                 ? this.render_content(
                     () => this.customization.renderers.promotion_choice!(piece,),
                     artwork,
                 )
                 : artwork,);
+
             button.dataset.color = request.color;
+
             button.addEventListener(
                 "click",
                 () => {
                     this.promotion_layer.replaceChildren();
+
                     this.request_move(
-                        { from: request.from, to: request.to, promotion, },
+                        {
+                            from: request.from,
+                            to: request.to,
+                            promotion,
+                        },
                         this.interaction_source,
                     );
+
                     this.squares.get(request.to,)?.focus();
                 },
             );
+
             panel.append(button,);
         }
 
@@ -3205,6 +3519,7 @@ export class ChessboardElement extends HtmlElementBase {
                         PROMOTION_DURATION_MS,
                         this.options.animation_duration ?? DEFAULT_ANIMATION_DURATION_MS,
                     ),
+
                     easing: MOVE_EASING,
                 },
             ),);
@@ -3241,6 +3556,7 @@ export class ChessboardElement extends HtmlElementBase {
             reason,
             source,
         );
+
         this.recorded_moves.push({ ...move, },);
 
         if (move.captured) {
@@ -3249,10 +3565,12 @@ export class ChessboardElement extends HtmlElementBase {
 
         this.cached_pgn = null;
         this.cached_status = null;
+
         this.last_move = {
             from: move.from,
             to: move.to,
         };
+
         this.reset_interaction();
         this.render_position(move,);
 
@@ -3281,7 +3599,9 @@ export class ChessboardElement extends HtmlElementBase {
             move,
             reason === "redo" ? "history" : "moves",
         );
+
         const detail = this.get_position_detail();
+
         this.dispatchEvent(new CustomEvent(
             "chessboard:move",
             {
@@ -3289,6 +3609,7 @@ export class ChessboardElement extends HtmlElementBase {
                     ...detail,
                     move,
                 },
+
                 bubbles: true,
                 composed: true,
             },
@@ -3308,7 +3629,11 @@ export class ChessboardElement extends HtmlElementBase {
             this.dispatchEvent(new CustomEvent(
                 "chessboard:gameover",
                 {
-                    detail: { ...this.get_status(), ...this.change_context, },
+                    detail: {
+                        ...this.get_status(),
+                        ...this.change_context,
+                    },
+
                     bubbles: true,
                     composed: true,
                 },
@@ -3347,10 +3672,12 @@ export class ChessboardElement extends HtmlElementBase {
 
         if (ghost) {
             ghost.getAnimations?.().forEach((animation,) => animation.cancel(),);
+
             ghost.classList.remove(
                 "drag_ghost",
                 "moving",
             );
+
             ghost.style.transform = "";
             ghost.style.left = "";
             ghost.style.top = "";
@@ -3417,11 +3744,13 @@ export class ChessboardElement extends HtmlElementBase {
         },);
 
         this.drag_return_animation = animation;
+
         const finish_return = (): void => {
             if (this.drag_return_animation === animation && this.drag_ghost === ghost) {
                 this.remove_drag_ghost();
             }
         };
+
         void animation.finished.then(
             finish_return,
             finish_return,
@@ -3433,7 +3762,13 @@ export class ChessboardElement extends HtmlElementBase {
         source: ChangeSource,
     ): void {
         this.revision += 1;
-        this.change_context = { revision: this.revision, reason, source, };
+
+        this.change_context = {
+            revision: this.revision,
+            reason,
+            source,
+        };
+
         this.cached_pgn = null;
         this.cached_status = null;
         this.legal_moves_cache.clear();
@@ -3452,17 +3787,29 @@ export class ChessboardElement extends HtmlElementBase {
         reason: ChangeReason,
         source: ChangeSource,
     ): ChessboardChangeDetail {
-        const detail = { revision: this.revision, reason, source, };
+        const detail = {
+            revision: this.revision,
+            reason,
+            source,
+        };
+
         this.dispatchEvent(new CustomEvent(
             "chessboard:change",
-            { detail, bubbles: true, composed: true, },
+            {
+                detail,
+                bubbles: true,
+                composed: true,
+            },
         ),);
 
         return detail;
     }
 
     private rebuild_captures(): void {
-        this.captured_pieces = { w: [], b: [], };
+        this.captured_pieces = {
+            w: [],
+            b: [],
+        };
 
         for (const move of this.recorded_moves) {
             if (move.captured) {
@@ -3477,7 +3824,19 @@ export class ChessboardElement extends HtmlElementBase {
     ): void {
         this.dispatchEvent(new CustomEvent(
             "chessboard:move_request_end",
-            { detail: { request: { ...request, input: { ...request.input, }, }, status, }, bubbles: true, composed: true, },
+            {
+                detail: {
+                    request: {
+                        ...request,
+                        input: { ...request.input, },
+                    },
+
+                    status,
+                },
+
+                bubbles: true,
+                composed: true,
+            },
         ),);
     }
 
@@ -3503,10 +3862,12 @@ export class ChessboardElement extends HtmlElementBase {
 
     private track_animation(animation: Animation,): Animation {
         this.active_animations.add(animation,);
+
         const finish = (): void => {
             this.active_animations.delete(animation,);
             this.schedule_animation_notification();
         };
+
         void animation.finished.then(
             finish,
             finish,
@@ -3517,11 +3878,16 @@ export class ChessboardElement extends HtmlElementBase {
 
     private schedule_animation_notification(): void {
         const notification = ++this.animation_notification;
+
         void this.when_animation_complete().then(() => {
             if (notification === this.animation_notification) {
                 this.dispatchEvent(new CustomEvent(
                     "chessboard:animation_complete",
-                    { detail: { revision: this.revision, }, bubbles: true, composed: true, },
+                    {
+                        detail: { revision: this.revision, },
+                        bubbles: true,
+                        composed: true,
+                    },
                 ),);
             }
         },);
@@ -3530,6 +3896,7 @@ export class ChessboardElement extends HtmlElementBase {
     private emit_position(): void {
         this.schedule_animation_notification();
         const detail = this.get_position_detail();
+
         this.dispatchEvent(new CustomEvent(
             "chessboard:position",
             {
@@ -3552,6 +3919,7 @@ export class ChessboardElement extends HtmlElementBase {
         error: unknown,
     ): void {
         const cause_message = error instanceof Error ? error.message : String(error,);
+
         let message = `${ERROR_OPERATIONS[reason]}: ${cause_message.replace(
             /[.!?]$/,
             "",
@@ -3577,6 +3945,7 @@ export class ChessboardElement extends HtmlElementBase {
                     reason,
                     message,
                 },
+
                 bubbles: true,
                 composed: true,
             },

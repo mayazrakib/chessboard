@@ -1,5 +1,5 @@
-import type { ComponentProps, } from "react"
 import { cn, } from "cn"
+import type { ComponentProps, } from "react"
 
 function Textarea({ className, ...props }: ComponentProps<"textarea">,) {
     return (

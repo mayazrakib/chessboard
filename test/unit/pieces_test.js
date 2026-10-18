@@ -11,37 +11,48 @@ for (const [type, name,] of [["p", "pawn",], ["n", "knight",], ["b", "bishop",],
         test(
             `The ${color_name} ${name} has the correct name and SVG reference.`,
             () => {
-                const piece = Object.freeze({ color, type, },);
+                const piece = Object.freeze({
+                    color,
+                    type,
+                },);
+
                 const artwork = create_piece_art(
                     piece,
                     "/pieces.svg",
                 );
+
                 const reference = `/pieces.svg#${color_name}-${name}`;
 
                 assert.equal(
                     get_piece_name(piece,),
                     `${color_name} ${name}`,
                 );
+
                 assert.equal(
                     get_promotion_name(type,),
                     name,
                 );
+
                 assert.equal(
                     artwork.namespaceURI,
                     "http://www.w3.org/2000/svg",
                 );
+
                 assert.equal(
                     artwork.getAttribute("viewBox",),
                     "0 0 45 45",
                 );
+
                 assert.equal(
                     artwork.getAttribute("focusable",),
                     "false",
                 );
+
                 assert.equal(
                     artwork.firstElementChild.getAttribute("href",),
                     reference,
                 );
+
                 assert.equal(
                     artwork.firstElementChild.getAttributeNS(
                         "http://www.w3.org/1999/xlink",
@@ -49,6 +60,7 @@ for (const [type, name,] of [["p", "pawn",], ["n", "knight",], ["b", "bishop",],
                     ),
                     reference,
                 );
+
                 assert.equal(
                     artwork.parentNode,
                     null,
@@ -71,7 +83,9 @@ test(
             30,
             40,
         ),);
+
         const piece = { firstElementChild: artwork, };
+
         const points = [
             [6, 16, true,],
             [44, 64, true,],
@@ -140,19 +154,55 @@ for (const [width, height,] of [[0, 20,], [20, 0,], [-20, 20,], [20, -20,],]) {
 }
 
 for (const [description, matrix, expected_bounds,] of [
-    ["translation and scaling", { a: 2, b: 0, c: 0, d: 3, e: 100, f: 200, }, [102, 206, 108, 218,],],
-    ["rotation", { a: 0, b: 1, c: -1, d: 0, e: 100, f: 200, }, [94, 201, 98, 204,],],
-    ["reflection", { a: -2, b: 0, c: 0, d: -3, e: 100, f: 200, }, [92, 182, 98, 194,],],
-    ["shearing", { a: 1, b: 1, c: -1, d: 1, e: 100, f: 200, }, [95, 203, 102, 210,],],
+    ["translation and scaling", {
+        a: 2,
+        b: 0,
+        c: 0,
+        d: 3,
+        e: 100,
+        f: 200,
+    }, [102, 206, 108, 218,],],
+    ["rotation", {
+        a: 0,
+        b: 1,
+        c: -1,
+        d: 0,
+        e: 100,
+        f: 200,
+    }, [94, 201, 98, 204,],],
+    ["reflection", {
+        a: -2,
+        b: 0,
+        c: 0,
+        d: -3,
+        e: 100,
+        f: 200,
+    }, [92, 182, 98, 194,],],
+    ["shearing", {
+        a: 1,
+        b: 1,
+        c: -1,
+        d: 1,
+        e: 100,
+        f: 200,
+    }, [95, 203, 102, 210,],],
 ]) {
     test(
         `SVG pickup transforms all four artwork corners under ${description}.`,
         () => {
             const artwork = {
                 ...create_artwork(new DOMRect(),),
-                getBBox: () => ({ x: 1, y: 2, width: 3, height: 4, }),
+
+                getBBox: () => ({
+                    x: 1,
+                    y: 2,
+                    width: 3,
+                    height: 4,
+                }),
+
                 getScreenCTM: () => matrix,
             };
+
             const [left, top, right, bottom,] = expected_bounds;
 
             assert.equal(
@@ -163,6 +213,7 @@ for (const [description, matrix, expected_bounds,] of [
                 ),
                 true,
             );
+
             assert.equal(
                 is_point_over_piece(
                     artwork,
@@ -171,6 +222,7 @@ for (const [description, matrix, expected_bounds,] of [
                 ),
                 true,
             );
+
             assert.equal(
                 is_point_over_piece(
                     artwork,
@@ -184,8 +236,25 @@ for (const [description, matrix, expected_bounds,] of [
 }
 
 for (const [description, box, matrix,] of [
-    ["a missing transform", { x: 0, y: 0, width: 10, height: 10, }, null,],
-    ["an empty vector box", { x: 0, y: 0, width: 0, height: 10, }, { a: 1, b: 0, c: 0, d: 1, e: 100, f: 100, },],
+    ["a missing transform", {
+        x: 0,
+        y: 0,
+        width: 10,
+        height: 10,
+    }, null,],
+    ["an empty vector box", {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 10,
+    }, {
+            a: 1,
+            b: 0,
+            c: 0,
+            d: 1,
+            e: 100,
+            f: 100,
+        },],
 ]) {
     test(
         `SVG pickup falls back to the client rectangle with ${description}.`,
@@ -197,6 +266,7 @@ for (const [description, box, matrix,] of [
                     20,
                     20,
                 ),),
+
                 getBBox: () => box,
                 getScreenCTM: () => matrix,
             };

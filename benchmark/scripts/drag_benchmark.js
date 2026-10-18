@@ -26,10 +26,12 @@ export async function run_drag_benchmark() {
     const cancel_original_frame = window.cancelAnimationFrame;
     const get_original_bounds = Element.prototype.getBoundingClientRect;
     const start_original_animation = Element.prototype.animate;
+
     const pointer_capture_descriptors = POINTER_CAPTURE_METHODS.map((method_name,) => Object.getOwnPropertyDescriptor(
         grid,
         method_name,
     ),);
+
     const frames = new Map();
     let frame_id = 0;
     let bounds_read_count = 0;
@@ -45,13 +47,16 @@ export async function run_drag_benchmark() {
 
             return frame_id;
         };
+
         window.cancelAnimationFrame = (pending_frame_id,) => frames.delete(pending_frame_id,);
-        Element.prototype.getBoundingClientRect = function () {
+
+        Element.prototype.getBoundingClientRect = function() {
             bounds_read_count++;
 
             return get_original_bounds.call(this,);
         };
-        Element.prototype.animate = function (...animation_arguments) {
+
+        Element.prototype.animate = function(...animation_arguments) {
             animation_count++;
 
             return start_original_animation.apply(
@@ -59,6 +64,7 @@ export async function run_drag_benchmark() {
                 animation_arguments,
             );
         };
+
         grid.setPointerCapture = () => undefined;
         grid.releasePointerCapture = () => undefined;
         grid.hasPointerCapture = () => false;
@@ -81,6 +87,7 @@ export async function run_drag_benchmark() {
                     clientY: y,
                 },
             ),);
+
             bounds_read_count = 0;
             animation_count = 0;
             let total_ms = 0;
@@ -92,8 +99,10 @@ export async function run_drag_benchmark() {
                 for (let sample_index = 0; sample_index < SAMPLES_PER_FRAME; sample_index++) {
                     const sample_index_overall = (frame_index * SAMPLES_PER_FRAME) + sample_index;
                     const horizontal_offset_px = Math.sin(sample_index_overall / HORIZONTAL_PERIOD_SAMPLES,) * square_bounds.width;
+
                     const vertical_offset_squares = VERTICAL_OFFSET_SQUARES
                         + (Math.cos(sample_index_overall / VERTICAL_PERIOD_SAMPLES,) * VERTICAL_AMPLITUDE_SQUARES);
+
                     const event = new PointerEvent(
                         "pointermove",
                         {
@@ -105,11 +114,13 @@ export async function run_drag_benchmark() {
                             clientY: y - (square_bounds.height * vertical_offset_squares),
                         },
                     );
+
                     Object.defineProperty(
                         event,
                         "timeStamp",
                         { value: (sample_index_overall * (MILLISECONDS_PER_SECOND / POINTER_SAMPLES_PER_SECOND)) + START_TIMESTAMP_MS, },
                     );
+
                     grid.dispatchEvent(event,);
                 }
 
@@ -131,6 +142,7 @@ export async function run_drag_benchmark() {
                 rect_reads: bounds_read_count,
                 animations: animation_count,
             };
+
             grid.dispatchEvent(new PointerEvent(
                 "pointercancel",
                 {
@@ -139,12 +151,14 @@ export async function run_drag_benchmark() {
                     pointerId: POINTER_ID,
                 },
             ),);
+
             frames.clear();
 
             frame_costs_ms.sort((
                 first_duration_ms,
                 second_duration_ms,
             ) => first_duration_ms - second_duration_ms,);
+
             trials.push({
                 total_ms,
                 p95_batch_ms: frame_costs_ms[Math.ceil(FRAME_COUNT * BATCH_PERCENTILE,) - 1],

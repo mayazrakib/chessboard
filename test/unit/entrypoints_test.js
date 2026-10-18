@@ -43,6 +43,7 @@ for (const entrypoint of ["core", "index", "replay",]) {
                 `../../dist/${entrypoint}.js`,
                 import.meta.url,
             ).href;
+
             const source = [
                 'import assert from "node:assert/strict";',
                 "",
@@ -63,7 +64,10 @@ for (const entrypoint of ["core", "index", "replay",]) {
             assert.doesNotThrow(() => execFileSync(
                 process.execPath,
                 ["--input-type=module", "--eval", source,],
-                { encoding: "utf8", timeout: 10000, },
+                {
+                    encoding: "utf8",
+                    timeout: 10000,
+                },
             ),);
         },
     );
