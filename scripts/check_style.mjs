@@ -30,7 +30,7 @@ function list_sources(directory) {
     });
 }
 
-for (const directory of ["src", "demo", "electron", "scripts", "test", "benchmark"]) {
+for (const directory of ["src", "demo", "electron", "scripts", "test", "tests"]) {
     const source_directory = `${ROOT}/${directory}`;
 
     if (!existsSync(source_directory)) {
