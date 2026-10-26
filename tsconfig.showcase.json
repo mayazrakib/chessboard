@@ -1,0 +1,18 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "allowImportingTsExtensions": true,
+        "jsx": "react-jsx",
+        "noEmit": true,
+        "rootDir": "."
+    },
+    "include": [
+        "src/**/*.ts",
+        "showcase/**/*.ts",
+        "showcase/**/*.tsx",
+        "playwright.config.ts",
+        "vite.config.ts"
+    ]
+}

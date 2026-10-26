@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, } from "vite";
 
 const DEMO_DIRECTORY = fileURLToPath(new URL(
-    "./demo",
+    "./showcase",
     import.meta.url,
 ),);
 

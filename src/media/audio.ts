@@ -5,37 +5,37 @@ const SOUND_URLS: Record<
     string
 > = {
     win: new URL(
-        "../../asset/audio/notification.mp3",
+        "../../assets/audio/notification.mp3",
         import.meta.url,
     ).href,
 
     lose: new URL(
-        "../../asset/audio/notification.mp3",
+        "../../assets/audio/notification.mp3",
         import.meta.url,
     ).href,
 
     move: new URL(
-        "../../asset/audio/move.mp3",
+        "../../assets/audio/move.mp3",
         import.meta.url,
     ).href,
 
     capture: new URL(
-        "../../asset/audio/capture.mp3",
+        "../../assets/audio/capture.mp3",
         import.meta.url,
     ).href,
 
     check: new URL(
-        "../../asset/audio/check.mp3",
+        "../../assets/audio/check.mp3",
         import.meta.url,
     ).href,
 
     checkmate: new URL(
-        "../../asset/audio/checkmate.mp3",
+        "../../assets/audio/checkmate.mp3",
         import.meta.url,
     ).href,
 
     draw: new URL(
-        "../../asset/audio/notification.mp3",
+        "../../assets/audio/notification.mp3",
         import.meta.url,
     ).href,
 };

@@ -7,7 +7,7 @@ const DEFAULT_ASSETS: Required<ChessboardAssets> = {
     ).href,
 
     piece_sprite_url: new URL(
-        "../../asset/pieces/pieces.svg",
+        "../../assets/images/pieces/pieces.svg",
         import.meta.url,
     ).href,
 };

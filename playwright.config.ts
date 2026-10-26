@@ -6,7 +6,7 @@ const TEST_SERVER_URL = `http://${TEST_SERVER_HOST}:${TEST_SERVER_PORT}`;
 
 export default defineConfig({
     testDir: ".",
-    testMatch: ["test/browser/**/*_test.js", "tests/perf/**/*_test.js",],
+    testMatch: ["tests/browser/**/*_test.js", "tests/perf/**/*_test.js",],
     fullyParallel: true,
     workers: 2,
 

@@ -11,7 +11,7 @@ test.describe(
         test(
             "Renders one board and ten concurrent boards within their budgets.",
             async ({ page, },) => {
-                await page.goto("/test/browser/drag.html",);
+                await page.goto("/tests/browser/drag.html",);
 
                 const timings = await page.evaluate(async () => {
                     const original = document.querySelector("chess-board",);
@@ -77,7 +77,7 @@ test.describe(
         test(
             "Keeps a throttled drag responsive and releases detached boards.",
             async ({ page, context, },) => {
-                await page.goto("/test/browser/drag.html",);
+                await page.goto("/tests/browser/drag.html",);
                 const session = await context.newCDPSession(page,);
 
                 await session.send(

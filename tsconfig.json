@@ -5,7 +5,7 @@
         "moduleResolution": "NodeNext",
         "paths": {
             "@/*": [
-                "./demo/*"
+                "./showcase/*"
             ]
         },
         "lib": [

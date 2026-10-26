@@ -1,15 +1,15 @@
-# Secrets and credentials
+# Secrets And Credentials
 .env
 .env.*
 !.env.example
 
-# OS metadata
+# Os Metadata
 .DS_Store
 .AppleDouble
 Desktop.ini
 Thumbs.db
 
-# Editor and IDE metadata
+# Editor And Ide Metadata
 .idea/
 .vscode/
 *.code-workspace
@@ -17,7 +17,7 @@ Thumbs.db
 *.swo
 *~
 
-# Temporary files
+# Temporary Files
 *.tmp
 *.temp
 
@@ -28,26 +28,26 @@ Thumbs.db
 # Dependencies
 node_modules/
 
-# Build artefacts
+# Build Artefacts
 dist/
 *.tgz
 
-# Test artefacts
+# Test Artefacts
 playwright-report/
 test-results/
 
-# Coverage artefacts
+# Coverage Artefacts
 coverage/
 lcov.info
 .nyc_output/
 
-# Linting and static analysis
+# Linting And Static Analysis
 .eslintcache
 .stylelintcache
 
-# JavaScript and TypeScript
+# Javascript And Typescript
 .vite/
 *.tsbuildinfo
 
-# Package manager caches
+# Package Manager Caches
 .npm/
