@@ -4,9 +4,9 @@
 
 | Component | Version | License | Source | Use |
 |---|---|---|---|---|
-| CBurnett chess pieces and sound recordings | Bundled assets | See complete asset notices | assets/LICENSING.md | Chessboard artwork and audio |
+| CBurnett chess pieces and sound recordings | Bundled assets | See the complete asset notices | `assets/LICENSING.md` | Board artwork and audio |
 | chess.js | 1.4.0 | BSD-2-Clause | https://github.com/jhlywa/chess.js | Chess rules |
 
 ## 2. Required Notices
 
-Complete artwork and audio attributions remain in `assets/LICENSING.md`. Preserve that file in published packages. Dependency distributions retain their complete notices.
+`assets/LICENSING.md` holds the complete artwork and audio attributions. Published packages must include that file. Each dependency's distribution provides its complete notices.
