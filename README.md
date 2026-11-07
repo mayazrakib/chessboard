@@ -1,5 +1,3 @@
-# `chessboard`
-
 ![Version](https://img.shields.io/badge/Version-1.0.1-737373?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-737373?style=flat-square)
 ![Languages](https://img.shields.io/badge/Languages-TypeScript%2C%20JavaScript-737373?style=flat-square)

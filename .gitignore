@@ -3,13 +3,13 @@
 .env.*
 !.env.example
 
-# Os Metadata
+# OS Metadata
 .DS_Store
 .AppleDouble
 Desktop.ini
 Thumbs.db
 
-# Editor And Ide Metadata
+# Editor And IDE Metadata
 .idea/
 .vscode/
 *.code-workspace
@@ -45,7 +45,7 @@ lcov.info
 .eslintcache
 .stylelintcache
 
-# Javascript And Typescript
+# JavaScript And TypeScript
 .vite/
 *.tsbuildinfo
 
