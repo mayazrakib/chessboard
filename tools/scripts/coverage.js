@@ -53,7 +53,7 @@ if (execution.error) {
 }
 
 if (execution.status !== 0) {
-    throw new Error("Coverage tests failed. Inspect coverage/tests.tap for failures; badges were not updated.",);
+    throw new Error("Coverage tests failed. Inspect coverage/tests.tap for failures.",);
 }
 
 const report = await readFile(
@@ -123,38 +123,6 @@ await writeFile(
         null,
         4,
     )}\n`,
-);
-
-const readme_url = new URL(
-    "../../README.md",
-    import.meta.url,
-);
-
-let readme = await readFile(
-    readme_url,
-    "utf8",
-);
-
-for (const [label, metric,] of [
-    ["Coverage", `${summary.line_percent.toFixed(1,)}%`,],
-    ["Testing", `${passed_count} passing`,],
-]) {
-    const badge_url = `https://img.shields.io/badge/${label}-${encodeURIComponent(metric,)}-237c65`;
-    const badge_pattern = new RegExp(`\\[!\\[${label}\\]\\([^)]*\\)\\]`,);
-
-    if (!badge_pattern.test(readme,)) {
-        throw new Error(`Failed to find the ${label} badge in the README.`,);
-    }
-
-    readme = readme.replace(
-        badge_pattern,
-        `[![${label}](${badge_url})]`,
-    );
-}
-
-await writeFile(
-    readme_url,
-    readme,
 );
 
 console.log(`Passed ${passed_count} tests. Library line coverage is ${summary.line_percent}% (branches ${summary.branch_percent}%, functions ${summary.function_percent}%).`,);

@@ -1,11 +1,5 @@
-![Version](https://img.shields.io/badge/Version-1.0.1-737373?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-737373?style=flat-square)
-![Languages](https://img.shields.io/badge/Languages-TypeScript%2C%20JavaScript-737373?style=flat-square)
-![Frameworks](https://img.shields.io/badge/Frameworks-Web%20Components%2C%20chess.js%2C%20React-737373?style=flat-square)
-![Compatibility](https://img.shields.io/badge/Compatibility-Not%20verified-737373?style=flat-square)
-![Build](https://img.shields.io/badge/Build-Not%20verified-737373?style=flat-square)
-![Tests](https://img.shields.io/badge/Tests-316%20unit%20and%20integration%20passing-737373?style=flat-square)
-![Vulnerabilities](https://img.shields.io/badge/Vulnerabilities-0%20known%20dependency%20findings-737373?style=flat-square)
+[![Build and tests](https://github.com/mayazrakib/chessboard/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/mayazrakib/chessboard/actions/workflows/ci.yml)
+[![Security scan](https://github.com/mayazrakib/chessboard/actions/workflows/security.yml/badge.svg?branch=master)](https://github.com/mayazrakib/chessboard/actions/workflows/security.yml)
 
 ## 1. Introduction
 
