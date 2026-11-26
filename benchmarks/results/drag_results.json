@@ -1,0 +1,112 @@
+{
+    "methodology": "Three independent page reloads per version, 960 synthetic pointer events in 120 controlled frame batches. requestAnimationFrame is manually stepped at simulated 60 Hz with eight events per frame. Each timed batch includes event dispatch, queued animation callbacks, and one forced geometry read. Setup and cancellation are excluded. This measures synchronous browser processing, not frame pacing, GPU time, or end-to-end pointer latency.",
+    "limitations": "Baseline pages reported hidden and optimized pages reported visible. Controlled callbacks avoid background requestAnimationFrame throttling, but these results should not be extrapolated to visible-tab FPS. The initial exploratory multi-trial loop accumulated animation work without browser task boundaries; those exploratory results were discarded. Independent reloads were used for the retained trials.",
+    "baseline": [
+        {
+            "visibility": "hidden",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.140.0 Chrome/150.0.7871.250 Electron/43.7.3 Safari/537.36",
+            "board_width": 534,
+            "events_per_trial": 960,
+            "batches_per_trial": 120,
+            "trials": [
+                {
+                    "total_ms": 129.60000014305115,
+                    "p95_batch_ms": 2.0999999046325684,
+                    "rect_reads": 960,
+                    "animations": 960
+                }
+            ]
+        },
+        {
+            "visibility": "hidden",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.140.0 Chrome/150.0.7871.250 Electron/43.7.3 Safari/537.36",
+            "board_width": 534,
+            "events_per_trial": 960,
+            "batches_per_trial": 120,
+            "trials": [
+                {
+                    "total_ms": 132.69999980926514,
+                    "p95_batch_ms": 2.299999952316284,
+                    "rect_reads": 960,
+                    "animations": 960
+                }
+            ]
+        },
+        {
+            "visibility": "hidden",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.140.0 Chrome/150.0.7871.250 Electron/43.7.3 Safari/537.36",
+            "board_width": 534,
+            "events_per_trial": 960,
+            "batches_per_trial": 120,
+            "trials": [
+                {
+                    "total_ms": 118.59999966621399,
+                    "p95_batch_ms": 2.299999952316284,
+                    "rect_reads": 960,
+                    "animations": 960
+                }
+            ]
+        }
+    ],
+    "optimized": [
+        {
+            "visibility": "visible",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.140.0 Chrome/150.0.7871.250 Electron/43.7.3 Safari/537.36",
+            "board_width": 534,
+            "events_per_trial": 960,
+            "batches_per_trial": 120,
+            "trials": [
+                {
+                    "total_ms": 5.900000095367432,
+                    "p95_batch_ms": 0.10000014305114746,
+                    "rect_reads": 1,
+                    "animations": 0
+                }
+            ]
+        },
+        {
+            "visibility": "visible",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.140.0 Chrome/150.0.7871.250 Electron/43.7.3 Safari/537.36",
+            "board_width": 534,
+            "events_per_trial": 960,
+            "batches_per_trial": 120,
+            "trials": [
+                {
+                    "total_ms": 6.6000001430511475,
+                    "p95_batch_ms": 0.19999980926513672,
+                    "rect_reads": 1,
+                    "animations": 0
+                }
+            ]
+        },
+        {
+            "visibility": "visible",
+            "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Code/1.140.0 Chrome/150.0.7871.250 Electron/43.7.3 Safari/537.36",
+            "board_width": 534,
+            "events_per_trial": 960,
+            "batches_per_trial": 120,
+            "trials": [
+                {
+                    "total_ms": 5.799999952316284,
+                    "p95_batch_ms": 0.10000014305114746,
+                    "rect_reads": 1,
+                    "animations": 0
+                }
+            ]
+        }
+    ],
+    "timing_changes": {
+        "drag_response_ms": {
+            "before": 200,
+            "after": 120
+        },
+        "drag_landing_ms": {
+            "before": 180,
+            "after": 130
+        },
+        "ordinary_move_ms": {
+            "before": 180,
+            "after": 180
+        }
+    }
+}

@@ -1,0 +1,180 @@
+{
+    "environment": "Chromium browser at http://127.0.0.1:3015/ on olympus.",
+    "methodology": "Four trials per workload, first discarded as warmup. Three timed samples measure synchronous JavaScript and DOM work with piece animation disabled. Preparation is outside the timed interval. Knight repetition produces a deterministic 120-ply game.",
+    "limitations": "These results do not measure displayed frame rate, GPU time, or retained heap. Timing varies with browser and host load. Cached status queries fall below timer resolution. FEN loading and example controls did not demonstrate a reliable improvement.",
+    "baseline": [
+        {
+            "name": "120 library moves",
+            "samples_ms": [
+                723.2999999523163,
+                695.3999998569489,
+                724.2999999523163
+            ]
+        },
+        {
+            "name": "120 undo and 120 redo",
+            "samples_ms": [
+                1432.5999999046326,
+                1436,
+                1408.7000000476837
+            ]
+        },
+        {
+            "name": "100 UCI history queries at 120 plies",
+            "samples_ms": [
+                338.2000000476837,
+                336.7000000476837,
+                367.7000000476837
+            ]
+        },
+        {
+            "name": "100 status queries",
+            "samples_ms": [
+                6.300000190734863,
+                6.299999952316284,
+                6.400000095367432
+            ]
+        },
+        {
+            "name": "30 orientation flips at 120 plies",
+            "samples_ms": [
+                165.79999995231628,
+                171.5,
+                158.5
+            ]
+        },
+        {
+            "name": "20 FEN loads",
+            "samples_ms": [
+                6.900000095367432,
+                5.700000047683716,
+                8.200000047683716
+            ]
+        }
+    ],
+    "optimized_initial": [
+        {
+            "name": "120 library moves",
+            "samples_ms": [
+                235.79999995231628,
+                229.70000004768372,
+                233.09999990463257
+            ]
+        },
+        {
+            "name": "120 undo and 120 redo",
+            "samples_ms": [
+                469.5,
+                466.40000009536743,
+                460.90000009536743
+            ]
+        },
+        {
+            "name": "100 UCI history queries at 120 plies",
+            "samples_ms": [
+                0.5,
+                0.39999985694885254,
+                0.5
+            ]
+        },
+        {
+            "name": "100 status queries",
+            "samples_ms": [
+                0,
+                0.09999990463256836,
+                0
+            ]
+        },
+        {
+            "name": "30 orientation flips at 120 plies",
+            "samples_ms": [
+                28.299999952316284,
+                23.299999952316284,
+                24.5
+            ]
+        },
+        {
+            "name": "20 FEN loads",
+            "samples_ms": [
+                4.8999998569488525,
+                4.900000095367432,
+                4.799999952316284
+            ]
+        }
+    ],
+    "optimized_final": [
+        {
+            "name": "120 library moves",
+            "samples_ms": [
+                281.2000000476837,
+                284.2999999523163,
+                282.10000014305115
+            ]
+        },
+        {
+            "name": "120 undo and 120 redo",
+            "samples_ms": [
+                561.1000001430511,
+                563.0999999046326,
+                568.0999999046326
+            ]
+        },
+        {
+            "name": "100 UCI history queries at 120 plies",
+            "samples_ms": [
+                0.5999999046325684,
+                0.40000009536743164,
+                0.2999999523162842
+            ]
+        },
+        {
+            "name": "100 status queries",
+            "samples_ms": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "name": "30 orientation flips at 120 plies",
+            "samples_ms": [
+                29,
+                33.09999990463257,
+                35
+            ]
+        },
+        {
+            "name": "20 FEN loads",
+            "samples_ms": [
+                7.800000190734863,
+                7.099999904632568,
+                7.5
+            ]
+        }
+    ],
+    "example_controls_baseline_after_component_optimization": {
+        "name": "40 moves with example controls",
+        "samples_ms": [
+            137.79999995231628,
+            123.59999990463257,
+            131.39999985694885
+        ]
+    },
+    "example_controls_final": {
+        "name": "40 moves with example controls",
+        "samples_ms": [
+            135.70000004768372,
+            132.70000004768372,
+            106.20000004768372
+        ]
+    },
+    "browser_drag_verification": {
+        "passed": 18,
+        "total": 18,
+        "description": "Native mouse drags with a corner grab, nine target edge/corner/center combinations, both orientations, and rendered highlight assertion before release."
+    },
+    "tests": {
+        "passed": 48,
+        "failed": 0
+    }
+}

@@ -1,0 +1,128 @@
+{
+    "methodology": "Local headless Chromium. System timings use one warm-up and three samples per workload with animations disabled. Baseline was captured before this API update. Replay compares 120 individual redo calls with one seek on the new implementation, using compact events. DOM counters are collected after forced garbage collection and are not a complete retained-heap or browser responsiveness measurement.",
+    "browser": "153.0.8010.12",
+    "baseline": [
+        {
+            "name": "120 library moves",
+            "samples_ms": [
+                138.79999999701977,
+                141,
+                136.79999999701977
+            ]
+        },
+        {
+            "name": "120 undo and 120 redo",
+            "samples_ms": [
+                263.79999999701977,
+                265.29999999701977,
+                269.79999999701977
+            ]
+        },
+        {
+            "name": "100 UCI history queries at 120 plies",
+            "samples_ms": [
+                0.5999999940395355,
+                0.20000000298023224,
+                0.19999998807907104
+            ]
+        },
+        {
+            "name": "100 status queries",
+            "samples_ms": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "name": "30 orientation flips at 120 plies",
+            "samples_ms": [
+                19.400000005960464,
+                17.900000005960464,
+                28.200000002980232
+            ]
+        },
+        {
+            "name": "20 FEN loads",
+            "samples_ms": [
+                3.2999999970197678,
+                2.7999999970197678,
+                3
+            ]
+        }
+    ],
+    "optimized": [
+        {
+            "name": "120 library moves",
+            "samples_ms": [
+                130.09999999403954,
+                128.8999999910593,
+                125.79999999701977
+            ]
+        },
+        {
+            "name": "120 undo and 120 redo",
+            "samples_ms": [
+                245,
+                248.20000000298023,
+                241.6000000089407
+            ]
+        },
+        {
+            "name": "100 UCI history queries at 120 plies",
+            "samples_ms": [
+                0.20000000298023224,
+                0.19999998807907104,
+                0.20000000298023224
+            ]
+        },
+        {
+            "name": "100 status queries",
+            "samples_ms": [
+                0,
+                0,
+                0
+            ]
+        },
+        {
+            "name": "30 orientation flips at 120 plies",
+            "samples_ms": [
+                21.799999997019768,
+                21.599999994039536,
+                27.600000008940697
+            ]
+        },
+        {
+            "name": "20 FEN loads",
+            "samples_ms": [
+                1.7999999970197678,
+                1.4000000059604645,
+                1.7999999970197678
+            ]
+        }
+    ],
+    "replay": {
+        "sequential_ms": [
+            34.5,
+            33,
+            33.3999999910593
+        ],
+        "batched_ms": [
+            2.9000000059604645,
+            3,
+            2.8999999910593033
+        ]
+    },
+    "lifecycle": {
+        "before_mounts": {
+            "documents": 2,
+            "nodes": 1086,
+            "jsEventListeners": 29
+        },
+        "after_100_mounts": {
+            "documents": 2,
+            "nodes": 1086,
+            "jsEventListeners": 29
+        }
+    }
+}
